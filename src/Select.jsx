@@ -186,6 +186,23 @@ const App = () => {
     },
   };
 
+  // 스타일 박스 스타일
+  const styleBoxStyle = (isSelected) => ({
+    border: isSelected ? 'none' : '2px solid #ddd',
+    borderRadius: '10px',
+    padding: '15px',
+    textAlign: 'center',
+    cursor: 'pointer',
+    backgroundColor: isSelected ? '#E3F2FD' : '#fff',
+    transition: 'all 0.2s ease',
+    ...(isSelected && {
+      borderWidth: '2px',
+      borderStyle: 'solid',
+      borderColor: '#4A90E2',
+      transform: 'scale(1.05)'
+    })
+  });
+
   return (
     <Container fluid style={styles.container}>
       <Row className="justify-content-center">
@@ -198,10 +215,7 @@ const App = () => {
             {Object.entries(styleNames).map(([styleKey, styleName]) => (
               <div
                 key={styleKey}
-                style={{
-                  ...styles.styleBox,
-                  ...(selectedStyle === styleKey ? styles.selectedBox : {}),
-                }}
+                style={styleBoxStyle(selectedStyle === styleKey)}
                 onClick={() => handleStyleChange(styleKey)}
               >
                 <img src={cloud} alt={styleName} style={styles.styleImage} />

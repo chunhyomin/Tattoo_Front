@@ -61,6 +61,60 @@ export const base64ToBlob = (base64String) => {
 };
 
 /**
+ * 동물 이미지 분석 함수
+ * @param {string} imageData - Base64 인코딩된 이미지 데이터
+ * @returns {Promise<Object>} - 동물 분석 결과
+ */
+export const analyzeAnimal = async (imageData) => {
+  try {
+    console.log('동물 분석 요청 시작');
+    
+    if (!imageData) {
+      console.error('이미지 데이터가 없습니다');
+      throw new Error('이미지 데이터가 없습니다');
+    }
+    
+    // 이미지 데이터가 base64 문자열인 경우 Blob으로 변환
+    const imageBlob = base64ToBlob(imageData);
+    console.log('이미지 Blob 생성 완료:', imageBlob.size, 'bytes');
+    
+    // FormData 객체 생성
+    const formData = new FormData();
+    formData.append('image', imageBlob, 'animal_image.jpg');
+    
+    console.log('동물 분석 API 요청 전송 중...');
+    
+    // API 요청 전송
+    const response = await fetch('http://127.0.0.1:5000/api/analyze-animal', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData,
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'omit'
+    });
+    
+    console.log('API 응답 상태:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API 오류 (${response.status}):`, errorText);
+      throw new Error(`API 오류 (${response.status}): ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('동물 분석 결과:', result);
+    return result;
+  } catch (error) {
+    console.error('동물 분석 요청 실패:', error);
+    throw error;
+  }
+};
+
+/**
  * 이미지 캡처 후 타투 생성 요청
  * @param {string} imageData - Base64 인코딩된 이미지 데이터
  * @param {string} gender - 성별 ('male' | 'female')
@@ -191,4 +245,5 @@ export default {
   setTattooStyle,
   getImageUrl,
   checkHealth,
+  analyzeAnimal,
 }; 
