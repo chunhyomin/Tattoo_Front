@@ -1,0 +1,390 @@
+
+/* 로고 스타일 */
+.logoimg {
+  width: 30%;
+  margin-top: 20px;
+}
+
+/* 구름 이미지 */
+.cloud-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: -2;
+}
+
+.cloudimg {
+  width: 100%;
+}
+
+/* 초록색 배경 박스 (배경 역할만 수행) */
+.info-box {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: #8ca649; /* 초록색 배경 */
+  z-index: -1;
+}
+
+/* 캐릭터 + 말풍선 + 버튼을 감싸는 컨테이너 */
+.content-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: -120px; /* 🔼 초록색 배경과 겹치도록 조정 */
+}
+
+/* 캐릭터 컨테이너 */
+.character-container {
+  position: absolute;
+  top: 70%; /* 높이를 조절해 말풍선과 겹치도록 설정 */
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* 좌우 양쪽 끝으로 배치 */
+  align-items: center;
+  padding: 0 50px; /* 좌우 여백 추가 */
+  transform: translateY(-50%); /* 중앙 정렬 */
+}
+
+/* 캐릭터 이미지 */
+.ch1img, .ch2img {
+  width: 30%;
+}
+
+/* 말풍선 + 버튼을 감싸는 컨테이너 */
+.bubble-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  z-index: 1; /* 캐릭터 위에 배치 */
+}
+
+/* 말풍선 박스 */
+.bubble-box {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60%;
+  max-width: 500px;
+  margin-top: 15%; /* 🔼 말풍선 전체를 위로 이동 */
+}
+
+/* 말풍선 이미지 */
+.bubbleimg {
+  width: 100%; /* 크기를 조절하여 전체 높이 변경 */
+}
+
+/* 말풍선 안의 텍스트 */
+.bubble-text {
+  position: absolute;
+  top: 50%; /* 말풍선 내부에서의 위치 */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  font-size: 16px;
+  font-weight: bold;
+  color: black;
+  text-align: center;
+}
+/* 버튼 박스 */
+.button-box {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -20px; /* 🔼 버튼을 말풍선과 더 가깝게 조정 */
+}
+
+/* 버튼 이미지 */
+.button-img {
+  width: 150px;
+}
+
+/* 버튼 위의 "시작하기" 텍스트 */
+.button-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  font-weight: bold;
+  color: black;
+}
+.app1-background {
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(to bottom, #8688ff, #76ceff); /* 배경색 위에서 아래로 그라데이션 */
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.cloud-bg {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  width: 100%;
+  z-index: -3;
+  filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
+}
+
+.logo-img {
+  position: relative;
+  top: 10%;
+  width: 80%;
+  max-width: 600px;
+  height: auto;
+  z-index: 3;
+}
+
+.leaf-img {
+  position: relative;
+  width: 70px;
+  height: auto;
+  z-index: -2;
+}
+
+.bubble-container {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  transform: translateY(110px);
+  z-index: 3;
+}
+
+.bubble-img {
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
+}
+
+.bubble-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 20% 10%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 2;
+}
+
+.logoimg {
+  display: block;
+  margin: 80px auto 0; /* 위에서 100px 띄우고 가로 중앙 정렬 */
+  width: 40%; /* 반응형 너비 */
+  max-width: 600px; /* 최대 너비 */
+  height: auto; /* 비율 유지 */
+  position: relative;
+  z-index: 2; /* 이미지들이 다른 요소 위에 오도록 설정 */
+}
+
+.ch1img {
+  /* position: absolute; */
+  bottom: 40px; /* 아래에서 40px 띄움 */
+  left: 40px; /* 왼쪽에서 40px 띄움 */
+  width: 30%; /* 너비를 30%로 설정 */
+  max-width: 250px; /* 최대 너비 설정 */
+  height: auto; /* 비율 유지 */
+  z-index: 10; /* 다른 요소들보다 앞에 배치 */
+}
+
+.ch2img {
+  /* position: absolute; */
+  bottom: 40px; /* 아래에서 40px 띄움 */
+  right: 40px; /* 오른쪽에서 40px 띄움 */
+  width: 30%; /* 너비를 30%로 설정 */
+  max-width: 500px; /* 최대 너비 설정 */
+  height: auto; /* 비율 유지 */
+  z-index: 10; /* 다른 요소들보다 앞에 배치 */
+}
+
+.bubbleimg {
+  display: block;
+  margin: 20px auto 0; /* 위에서 100px 띄우고 가로 중앙 정렬 */
+  width: 100%; /* 반응형 너비 */
+  max-width: 600px; /* 최대 너비 */
+  height: auto; /* 비율 유지 */
+  position: relative;
+  height: auto; /* 비율 유지 */
+  z-index: 10; /* 다른 요소들보다 앞에 배치 */
+}
+
+.cloudimg {
+  position: absolute; /* 위치 고정 */
+  top: 0; /* 화면 상단에 고정 */
+  left: 0; /* 화면 왼쪽에 고정 */
+  width: 100%; /* 가로 길이만 100% */
+  height: auto; /* 비율을 유지하며 세로 자동 조정 */
+  z-index: 1; /* 다른 요소 뒤로 배치 */
+}
+
+.box {
+  width: 100%;
+  height: 250px;
+  right: 0;
+  background-color: #8ba649;
+  position: absolute;
+  bottom: 0;
+  z-index: 2; /* box는 다른 요소 위로 배치 */
+}
+
+.video_type{
+  display: block;
+  border-radius: 5%;
+  width: 100%;
+  max-width: 70%;
+  margin: 40px auto 0; /* 위에서 100px 띄우고 가로 중앙 정렬 */
+  height: auto; /* 비율 유지 */
+  position: relative;
+  z-index: 2; /* 이미지들이 다른 요소 위에 오도록 설정 */
+}
+div p {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 20% 10%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 2;
+}
+
+.start-btn {
+  position: absolute;
+  top: -5%;
+  right: -10%;
+  width: 28%;
+  max-width: 200px;
+  min-width: 100px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 4;
+}
+
+.start-btn-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
+}
+
+.char-img {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  /* transform: translateY(200px); */
+  z-index: 3;
+  filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
+  cursor: default;
+}
+
+.grass-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 30vh;
+  background: linear-gradient(to bottom, #95bb53, #a3a54b);
+  z-index: 2;
+}
+
+/* 세로 비율일 경우 버튼 위치 조정 */
+@media (max-aspect-ratio: 3/4) {
+  .start-btn {
+    top: 2%;           /* 말풍선 안쪽으로 */
+    right: 0;          /* 오른쪽 끝에 딱 맞춤 */
+    width: 30%;        /* 조금 더 크게 */
+    max-width: 120px;  /* 화면이 작을 때 너무 커지지 않도록 */
+  }
+}
+@media (max-width: 576px) {
+  .char-img {
+    display: none;
+  }
+}
+
+
+.category-panel {
+  position: relative;
+}
+
+.panel-shape {
+  background: #cceeee;
+  height: 300px;
+  border-radius: 50px;
+  margin-bottom: 20px;
+}
+
+.banner {
+  background: #ffd700;
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.image-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 8px;
+}
+
+.temp{
+  max-height: 33%;
+  height: 150px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 8px;
+}
+
+.btn-icon {
+  background: #eee;
+  padding: 10px 20px;
+  border-radius: 999px;
+  margin: 0 10px;
+  font-weight: bold;
+}
+
+.dark_cloud {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  width: 100%;
+  z-index: -3;
+  filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
+}
+
+.iland {
+  /* position: absolute; */
+  bottom: 40px; /* 아래에서 40px 띄움 */
+  right: 40px; /* 오른쪽에서 40px 띄움 */
+  width: 30%; /* 너비를 30%로 설정 */
+  max-width: 500px; /* 최대 너비 설정 */
+  height: auto; /* 비율 유지 */
+  z-index: 10; /* 다른 요소들보다 앞에 배치 */
+}
