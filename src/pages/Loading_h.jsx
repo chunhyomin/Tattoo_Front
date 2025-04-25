@@ -11,8 +11,8 @@ import cloud from "/cloud.png";
 import bubble from "/말풍선.png";
 import btimg from "/buttonimg.png";
 import d_bubble from "/dark_bubble.png";
-import d_cloud from "dark_cloud.png";
-import cat from "고양이.png";
+import d_cloud from "/dark_cloud.png";
+import cat from "/고양이.png";
 
 
 
