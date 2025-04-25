@@ -3,37 +3,22 @@
  * 프론트엔드에서 백엔드 API 통신을 담당하는 모듈
  */
 
-// API 서버 주소 (로컬 서버)
-const API_BASE_URL = 'http://127.0.0.1:5000';
+// API 엔드포인트 설정
+const API_URL = 'http://localhost:5000';
 
 /**
- * 상태 확인
- * @returns {Promise<boolean>} - 서버 상태
+ * 서버 상태를 체크하는 함수
+ * @returns {Promise<boolean>} 서버가 정상 상태인지 여부
  */
 export const checkHealth = async () => {
   try {
-    console.log('서버 상태 확인 시작...');
-    const response = await fetch('http://127.0.0.1:5000/health', {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache',
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-    
-    console.log('서버 응답 상태:', response.status);
-    
+    const response = await fetch(`${API_URL}/health`);
     if (!response.ok) {
-      console.error('서버 응답 오류:', response.status);
-      return false;
+      throw new Error(`API 오류: ${response.status}`);
     }
-    
-    const data = await response.json();
-    console.log('서버 상태 데이터:', data);
-    return data.status === 'ok';
+    return true;
   } catch (error) {
-    console.error('서버 상태 확인 예외:', error);
+    console.error('서버 상태 체크 오류:', error);
     return false;
   }
 };
@@ -115,59 +100,47 @@ export const analyzeAnimal = async (imageData) => {
 };
 
 /**
- * 이미지 캡처 후 타투 생성 요청
- * @param {string} imageData - Base64 인코딩된 이미지 데이터
+ * 타투를 생성하는 함수
+ * @param {string} image - base64 인코딩된 이미지
  * @param {string} gender - 성별 ('male' | 'female')
- * @param {string} style - 스타일 ('cute' | 'pretty' | 'simple' | 'chic')
- * @returns {Promise<Object>} - 응답 데이터
+ * @param {string} style - 타투 스타일
+ * @returns {Promise<Object>} 생성된 타투 결과
  */
-export const generateTattoo = async (imageData, gender, style) => {
+export const generateTattoo = async (image, gender, style) => {
   try {
-    console.log(`타투 생성 요청 시작: 성별=${gender}, 스타일=${style}`);
-    
-    if (!imageData) {
-      console.error('이미지 데이터가 없습니다');
-      throw new Error('이미지 데이터가 없습니다');
-    }
-    
-    // 이미지 데이터가 base64 문자열인 경우 Blob으로 변환
-    const imageBlob = base64ToBlob(imageData);
-    console.log('이미지 Blob 생성 완료:', imageBlob.size, 'bytes');
-    
-    // FormData 객체 생성
-    const formData = new FormData();
-    formData.append('image', imageBlob, 'user_image.jpg');
-    formData.append('gender', gender);
-    formData.append('style', style);
-    
-    console.log('API 요청 전송 중...');
-    
-    // API 요청 전송
-    const response = await fetch('http://127.0.0.1:5000/api/generate-tattoo', {
+    // 데모 목적으로 API 호출을 시뮬레이션합니다
+    // 실제 서비스에서는 아래 주석 해제 후 사용
+    /*
+    const response = await fetch(`${API_URL}/generate-tattoo`, {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
+        'Content-Type': 'application/json',
       },
-      body: formData,
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit'
+      body: JSON.stringify({
+        image,
+        gender,
+        style
+      }),
     });
-    
-    console.log('API 응답 상태:', response.status);
-    
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API 오류 (${response.status}):`, errorText);
-      throw new Error(`API 오류 (${response.status}): ${errorText}`);
+      throw new Error(`API 오류: ${response.status}`);
     }
+
+    return await response.json();
+    */
+
+    // 데모용 시뮬레이션 응답
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
-    const result = await response.json();
-    console.log('API 응답 데이터:', result);
-    return result;
+    return {
+      animalType: '호랑이',
+      tattooImage: '/tiger-tattoo.png',
+      description: '당신의 성격은 리더십이 강하고 용감한 호랑이와 닮았습니다. 강인함과 우아함을 동시에 지닌 이 타투는 당신의 강한 의지를 표현합니다.',
+      traits: ['용맹', '리더십', '결단력', '카리스마']
+    };
   } catch (error) {
-    console.error('타투 생성 요청 실패:', error);
+    console.error('타투 생성 오류:', error);
     throw error;
   }
 };
@@ -179,7 +152,7 @@ export const generateTattoo = async (imageData, gender, style) => {
  */
 export async function getTattooResult(id) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/result/${id}`);
+    const response = await fetch(`${API_URL}/api/result/${id}`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -201,7 +174,7 @@ export async function getTattooResult(id) {
  */
 export async function setTattooStyle(imageId, style) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/style`, {
+    const response = await fetch(`${API_URL}/api/style`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -231,11 +204,11 @@ export async function setTattooStyle(imageId, style) {
  */
 export function getImageUrl(imagePath) {
   if (imagePath && imagePath.startsWith('/')) {
-    return `${API_BASE_URL}${imagePath}`;
+    return `${API_URL}${imagePath}`;
   } else if (imagePath && imagePath.startsWith('http')) {
     return imagePath;
   } else {
-    return `${API_BASE_URL}/images/${imagePath}`;
+    return `${API_URL}/images/${imagePath}`;
   }
 }
 

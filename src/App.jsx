@@ -105,7 +105,7 @@ function App() {
                 src={btimg}
                 alt="시작 버튼"
                 className="start-btn"
-                onClick={() => navigate("/page2")}
+                onClick={() => navigate("/Gender_Select")}
               />
             </div>
           </Col>

@@ -1,4 +1,3 @@
-
 /* 로고 스타일 */
 .logoimg {
   width: 30%;
@@ -246,13 +245,14 @@
 
 .video_type{
   display: block;
-  border-radius: 5%;
+  border-radius: 10px;
   width: 100%;
-  max-width: 70%;
-  margin: 40px auto 0; /* 위에서 100px 띄우고 가로 중앙 정렬 */
-  height: auto; /* 비율 유지 */
+  max-width: 100%;
+  margin: 20px auto 0;
+  height: auto;
   position: relative;
-  z-index: 2; /* 이미지들이 다른 요소 위에 오도록 설정 */
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 div p {
   position: absolute;
@@ -387,4 +387,50 @@ div p {
   max-width: 500px; /* 최대 너비 설정 */
   height: auto; /* 비율 유지 */
   z-index: 10; /* 다른 요소들보다 앞에 배치 */
+}
+
+/* 반응형 버튼 스타일 */
+.responsive-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  position: relative;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+/* 모바일 화면에서의 버튼 스타일 */
+@media (max-width: 768px) {
+  .responsive-btn {
+    padding: 8px 15px;
+    font-size: 14px;
+    margin: 3px;
+    width: auto;
+  }
+  
+  .video_type {
+    max-width: 100%;
+    margin: 10px auto 0;
+  }
+  
+  .button-img {
+    width: 120px !important;
+  }
+}
+
+/* 작은 화면에서의 버튼 스타일 */
+@media (max-width: 576px) {
+  .responsive-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin: 2px;
+  }
+  
+  .button-img {
+    width: 100px !important;
+  }
 }

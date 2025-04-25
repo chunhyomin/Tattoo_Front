@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카메라 액세스 테스트</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4A90E2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+    video {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>카메라 액세스 테스트</h1>
+  
+  <div id="status"></div>
+  <div id="error" class="error"></div>
+  
+  <button id="checkBtn">카메라 지원 확인</button>
+  <button id="requestBtn">카메라 접근 요청</button>
+
+  <video id="video" autoplay playsinline style="display:none;"></video>
+
+  <script>
+    const statusDiv = document.getElementById('status');
+    const errorDiv = document.getElementById('error');
+    const video = document.getElementById('video');
+    
+    // 환경 정보 표시
+    statusDiv.innerHTML = `
+      <h3>브라우저 정보:</h3>
+      <pre>User Agent: ${navigator.userAgent}</pre>
+      <pre>navigator.mediaDevices 존재: ${navigator.mediaDevices ? '예' : '아니오'}</pre>
+      <pre>navigator.mediaDevices.getUserMedia 존재: ${navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? '예' : '아니오'}</pre>
+      <pre>보안 컨텍스트: ${window.isSecureContext ? '예' : '아니오'}</pre>
+      <pre>프로토콜: ${window.location.protocol}</pre>
+    `;
+    
+    // 카메라 지원 확인
+    document.getElementById('checkBtn').addEventListener('click', function() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        errorDiv.textContent = '브라우저가 카메라 API를 지원하지 않습니다.';
+        return;
+      }
+      
+      statusDiv.innerHTML += '<p class="success">브라우저가 카메라 API를 지원합니다!</p>';
+    });
+    
+    // 카메라 접근 요청
+    document.getElementById('requestBtn').addEventListener('click', function() {
+      errorDiv.textContent = '';
+      
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        errorDiv.textContent = '브라우저가 카메라 API를 지원하지 않습니다.';
+        return;
+      }
+      
+      // 폴리필 추가
+      if (!navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia = function(constraints) {
+          const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+          
+          if (!getUserMedia) {
+            return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
+          }
+          
+          return new Promise(function(resolve, reject) {
+            getUserMedia.call(navigator, constraints, resolve, reject);
+          });
+        }
+      }
+      
+      navigator.mediaDevices.getUserMedia({
+        video: true
+      })
+      .then(function(stream) {
+        video.style.display = 'block';
+        video.srcObject = stream;
+        statusDiv.innerHTML += '<p class="success">카메라 접근 성공!</p>';
+      })
+      .catch(function(err) {
+        errorDiv.textContent = '카메라 접근 오류: ' + err.message;
+        console.error('카메라 접근 오류:', err);
+      });
+    });
+  </script>
+</body>
+</html> 

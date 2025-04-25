@@ -35,7 +35,7 @@ const TextBox = styled.p`
 
 function App() {
   const navigate = useNavigate();
-  const text = "마음에 드는 사진을 한 장 선택해 주세요!";
+  const text = "마음에 드는 사진 한 장과 원하는 스타일을 하나 선택해 주세요!";
   const [displayText, setDisplayText] = useState("");
   const [loop, setLoop] = useState(0);
   const [fontSize, setFontSize] = useState(16);
@@ -141,7 +141,7 @@ function App() {
                   src={btimg2}
                   alt="버튼"
                   className="start-btn"
-                  onClick={() => navigate("/page4")}
+                  onClick={() => navigate("/Loading")}
                 />
               )}
             </div>

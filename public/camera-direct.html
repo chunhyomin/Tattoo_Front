@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>카메라 직접 테스트</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    video {
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid #ccc;
+      margin: 20px auto;
+      display: block;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      background-color: #4A90E2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    #error {
+      color: red;
+      margin: 10px 0;
+    }
+    #log {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 20px auto;
+      max-width: 500px;
+      height: 100px;
+      overflow-y: auto;
+      text-align: left;
+      font-family: monospace;
+      background-color: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+  <h1>카메라 직접 테스트</h1>
+  <p>브라우저 카메라 접근을 테스트합니다.</p>
+  
+  <div id="log"></div>
+  <div id="error"></div>
+  
+  <video id="video" autoplay playsinline></video>
+  
+  <div>
+    <button id="startBtn">카메라 시작</button>
+    <button id="captureBtn">캡처</button>
+  </div>
+  
+  <canvas id="canvas" style="display:none;"></canvas>
+  <div>
+    <img id="capturedImage" style="display:none; max-width:500px; margin:20px auto;">
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const capturedImage = document.getElementById('capturedImage');
+    const startBtn = document.getElementById('startBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const errorDiv = document.getElementById('error');
+    const logDiv = document.getElementById('log');
+    
+    // 로그 함수
+    function log(message) {
+      const now = new Date().toLocaleTimeString();
+      logDiv.innerHTML += `<div>[${now}] ${message}</div>`;
+      logDiv.scrollTop = logDiv.scrollHeight;
+      console.log(message);
+    }
+    
+    // 카메라 시작
+    startBtn.addEventListener('click', async () => {
+      try {
+        log('카메라 접근 요청 시작...');
+        
+        // navigator 객체 확인
+        if (!navigator.mediaDevices) {
+          log('navigator.mediaDevices가 없습니다!');
+          errorDiv.textContent = '이 브라우저는 카메라 API를 지원하지 않습니다.';
+          return;
+        }
+        
+        log('카메라 권한 요청 중...');
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true,
+          audio: false
+        });
+        
+        log('카메라 권한 획득 성공!');
+        video.srcObject = stream;
+        
+        log('비디오 스트림 설정됨');
+        video.style.display = 'block';
+        
+        // play 함수는 사용자 상호작용 후 호출
+        try {
+          await video.play();
+          log('비디오 재생 시작됨');
+        } catch (playError) {
+          log('비디오 재생 오류: ' + playError);
+          errorDiv.textContent = '비디오 재생 오류: ' + playError.message;
+        }
+      } catch (err) {
+        log('카메라 접근 오류: ' + err);
+        errorDiv.textContent = '카메라 접근 오류: ' + err.message;
+      }
+    });
+    
+    // 캡처 버튼
+    captureBtn.addEventListener('click', () => {
+      if (!video.srcObject) {
+        errorDiv.textContent = '먼저 카메라를 시작해주세요.';
+        return;
+      }
+      
+      try {
+        // 캔버스 크기 설정
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // 비디오 프레임 캡처
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // 이미지 표시
+        capturedImage.src = canvas.toDataURL('image/png');
+        capturedImage.style.display = 'block';
+        
+        log('이미지 캡처 성공');
+      } catch (err) {
+        log('캡처 오류: ' + err);
+        errorDiv.textContent = '캡처 오류: ' + err.message;
+      }
+    });
+    
+    // 페이지 로드 시 브라우저 정보 표시
+    window.addEventListener('DOMContentLoaded', () => {
+      log(`브라우저: ${navigator.userAgent}`);
+      log(`보안 컨텍스트: ${window.isSecureContext ? '예' : '아니오'}`);
+      log(`navigator.mediaDevices 존재: ${navigator.mediaDevices ? '예' : '아니오'}`);
+      log(`현재 URL: ${window.location.href}`);
+    });
+  </script>
+</body>
+</html> 

@@ -2,29 +2,42 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App.jsx";
-import Page2 from "./pages/page2.jsx";
-import Page3 from "./pages/page3.jsx";
+import Gender_Select from "./pages/Gender_Select.jsx";
+import Picture_Select from "./pages/Picture_Select.jsx";
 import Page4 from "./pages/page4.jsx";
 import Page5 from "./pages/page5.jsx";
-import Picture from "./Picture.jsx";
-import Result from "./Result.jsx";
-import Select from "./Select.jsx";
-import Loading from "./Loading.jsx";
+import Picture from "./pages/Picture.jsx";
+import Result from "./pages/Result.jsx";
+import Loading from "./pages/Loading.jsx";
+import Loading_h from "./pages/Loading_h.jsx";
 import "./index.css";
+
+// 미디어 디바이스 폴리필 추가
+import { setupMediaDevicesPolyfill } from "./mediaDevices-polyfill.js";
+
+// 폴리필 설정 실행 
+if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+  try {
+    setupMediaDevicesPolyfill();
+    console.log("MediaDevices 폴리필 설정됨");
+  } catch (error) {
+    console.error("MediaDevices 폴리필 설정 오류:", error);
+  }
+}
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/page2" element={<Page2 />} />
-        <Route path="/page3" element={<Page3 />} />
+        <Route path="/Gender_Select" element={<Gender_Select />} />
+        <Route path="/Picture_Select" element={<Picture_Select />} />
         <Route path="/page4" element={<Page4 />} />
         <Route path="/page5" element={<Page5 />} />
         <Route path="/Picture" element={<Picture />} />
         <Route path="/Result" element={<Result />} />
-        <Route path="/Select" element={<Select />} />
         <Route path="/Loading" element={<Loading />} />
+        <Route path="/Loading_h" element={<Loading_h />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

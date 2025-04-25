@@ -49,7 +49,7 @@ function App() {
       alert("성별을 선택해주세요!");
     } else {
       // Picture 페이지 대신 Select 페이지로 이동 (스타일 선택)
-      navigate("/Select");
+      navigate("/Picture");
     }
   };
 
@@ -124,7 +124,7 @@ function App() {
               className="bubble-container position-relative d-flex justify-content-center align-items-center"
               ref={bubbleRef}
             >
-              <img src={bubble} alt="말푸선" className="bubble-img w-100" />
+              <img src={bubble} alt="말풍선" className="bubble-img w-100" />
               <div
                 className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
                 style={{ padding: "2rem" }}
