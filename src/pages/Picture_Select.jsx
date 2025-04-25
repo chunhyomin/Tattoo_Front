@@ -21,7 +21,7 @@ import picture3 from "../picture/picture3.png";
 import picture4 from "../picture/picture4.png";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./page3.css";
+import "./Picture_Select.css";
 import "../App.css";
 
 const TextBox = styled.p`
@@ -141,7 +141,7 @@ function App() {
                   src={btimg2}
                   alt="버튼"
                   className="start-btn"
-                  onClick={() => navigate("/Loading")}
+                  onClick={() => navigate("/Loading_h")}
                 />
               )}
             </div>

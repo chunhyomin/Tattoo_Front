@@ -12,7 +12,7 @@ import bubble from "/말풍선.png";
 import btimg2 from "/buttonimg2.png";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./page2.css";
+import "./Gender_Select.css";
 import "../App.css";
 
 const TextBox = styled.p`

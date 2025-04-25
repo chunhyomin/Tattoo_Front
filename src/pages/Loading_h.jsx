@@ -10,6 +10,11 @@ import ch2 from "/너굴맨.png";
 import cloud from "/cloud.png";
 import bubble from "/말풍선.png";
 import btimg from "/buttonimg.png";
+import d_bubble from "/dark_bubble.png";
+import d_cloud from "dark_cloud.png";
+import cat from "고양이.png";
+
+
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../App.css";
@@ -71,7 +76,7 @@ function App() {
 
   return (
     <div className="app1-background">
-      <img src={cloud} className="cloud-bg" alt="배경" />
+      <img src={d_cloud} className="cloud-bg" alt="배경" />
 
       <Container fluid className="text-center">
         <div className="position-absolute top-0 end-0 p-3">

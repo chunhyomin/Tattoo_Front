@@ -5,7 +5,6 @@ import App from "./App.jsx";
 import Gender_Select from "./pages/Gender_Select.jsx";
 import Picture_Select from "./pages/Picture_Select.jsx";
 import Tatoo_Select from "./pages/Tatoo_Select.jsx";
-import Page5 from "./pages/page5.jsx";
 import Picture from "./pages/Picture.jsx";
 import Result from "./pages/Result.jsx";
 import Loading from "./pages/Loading.jsx";
@@ -33,7 +32,6 @@ createRoot(document.getElementById("root")).render(
         <Route path="/Gender_Select" element={<Gender_Select />} />
         <Route path="/Picture_Select" element={<Picture_Select />} />
         <Route path="/Tatoo_Select" element={<Tatoo_Select />} />
-        <Route path="/page5" element={<Page5 />} />
         <Route path="/Picture" element={<Picture />} />
         <Route path="/Result" element={<Result />} />
         <Route path="/Loading" element={<Loading />} />

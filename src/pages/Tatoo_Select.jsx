@@ -16,7 +16,7 @@
     import lettering from "../tatoo/lettering.png";
 
     import "bootstrap/dist/css/bootstrap.min.css";
-    import "./page4.css";
+    import "./Tatoo_Select.css";
     import "../App.css";
 
     const TextBox = styled.p`
