@@ -219,7 +219,8 @@ const goBack = () => {
               
               {/* 타투 생성 버튼 추가 */}
               <button 
-                onClick={sendImageToBackend} 
+                // onClick={sendImageToBackend}
+                onClick={() => navigate("/Picture_Select")}
                 disabled={loading}
                 style={{ padding: "10px 20px", fontSize: "16px", backgroundColor: loading ? "#ccc" : "#007bff", color: "white" }}
               >

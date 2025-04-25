@@ -158,7 +158,7 @@
             <Col xs={6} sm={3} md={2} className="d-flex justify-content-center">
                 <img src={minib1} alt="인쇄하기" className="btn-icon" onClick={() => navigate("/page5")} />
             {/* 버튼 2 */}
-                <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/page3")} />
+                <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
             </Col>
             </Row>
         </Container>
