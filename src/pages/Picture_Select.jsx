@@ -135,7 +135,7 @@ function App() {
               <div className="bubble-text">
                 <TextBox fontSize={fontSize}>{displayText}</TextBox>
               </div>
-
+{/* 
               {selectedPictureIndex !== null && (
                 <img
                   src={btimg2}
@@ -143,7 +143,7 @@ function App() {
                   className="start-btn"
                   onClick={() => navigate("/Loading_h")}
                 />
-              )}
+              )} */}
             </div>
           </Col>
 

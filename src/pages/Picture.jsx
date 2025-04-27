@@ -17,14 +17,18 @@ import btimg from "/buttonimg.png";
 import "../App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+//text 색, 두께 수정
 const TextBox = styled.p`
-  position: absolute;
-  z-index: 999;
-  color: black;
+  font-weight: 700;
+  color: #8B8B8B;
+  white-space: pre-line;
+  margin: 0;
+  word-break: keep-all;
   text-align: center;
-  width: 80%;
+  line-height: 1.4;
   font-size: ${({ fontSize }) => fontSize - 30}px;
 `;
+
 
 function App() {
   const navigate = useNavigate();
