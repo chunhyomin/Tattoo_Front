@@ -32,7 +32,7 @@ const TextBox = styled.p`
 
 function App() {
   const navigate = useNavigate();
-  const text = "카메라를 통해 자신의 모습을 촬영해주세요. 촬영 후 타투 생성하기를 눌러주세요.";
+  const text = "카메라를 통해 자신의 모습을 4장 촬영해주세요. 촬영 후 타투 생성하기를 눌러주세요.";
   const [displayText, setDisplayText] = useState("");
   const [loop, setLoop] = useState(0);
   const [fontSize, setFontSize] = useState(1);
@@ -41,9 +41,16 @@ function App() {
   const [error, setError] = useState(null);
   const [selectedGender, setSelectedGender] = useState('male'); // 기본값 male
   const [selectedStyle, setSelectedStyle] = useState('simple'); // 기본값 simple
+  const [photoCount, setPhotoCount] = useState(0); // 촬영된 사진 개수 상태 추가
 
   // 성별 정보 로드
   useEffect(() => {
+    // localStorage에서 capturedImages 완전히 제거
+    localStorage.removeItem('capturedImages');
+    
+    // photoCount 초기화
+    setPhotoCount(0);
+    
     const savedGender = localStorage.getItem('selectedGender');
     if (savedGender) {
       setSelectedGender(savedGender);
@@ -55,6 +62,12 @@ function App() {
       setSelectedStyle(savedStyle);
       console.log("저장된 스타일 정보 로드:", savedStyle);
     }
+  }, []);
+
+  // 이미 저장된 사진 개수 확인
+  useEffect(() => {
+    const savedImages = JSON.parse(localStorage.getItem('capturedImages') || '[]');
+    setPhotoCount(savedImages.length);
   }, []);
 
   // 타이핑 효과
@@ -139,6 +152,23 @@ const handleCapture = () => { //화면 캡쳐쳐
 
   const imageDataUrl = canvas.toDataURL("image/png"); //PC다운로드 폴더에 png로 저장
   setCapturedImage(imageDataUrl);
+  
+  // 저장된 이미지 배열 가져오기
+  const savedImages = JSON.parse(localStorage.getItem('capturedImages') || '[]');
+  
+  // 최대 4장까지만 저장
+  if (savedImages.length < 4) {
+    savedImages.push(imageDataUrl);
+    localStorage.setItem('capturedImages', JSON.stringify(savedImages));
+    setPhotoCount(savedImages.length); // 사진 개수 상태 업데이트
+    console.log(`이미지 저장 완료: ${savedImages.length}장 저장됨`);
+  } else {
+    // 4장 이상인 경우 가장 오래된 이미지 대체
+    savedImages.shift(); // 첫 번째 이미지 제거
+    savedImages.push(imageDataUrl); // 새 이미지 추가
+    localStorage.setItem('capturedImages', JSON.stringify(savedImages));
+    console.log('최대 4장 초과. 가장 오래된 이미지가 대체되었습니다.');
+  }
 };
 
 
@@ -154,27 +184,24 @@ const handleDownload = () => {
 
 // 이미지 전송 함수 수정 - 이미지 저장 후 로딩 페이지로 이동
 const sendImageToBackend = async () => {
-  if (capturedImage) {
+  const savedImages = JSON.parse(localStorage.getItem('capturedImages') || '[]');
+  
+  if (savedImages.length > 0) {
     try {
       setLoading(true);
       setError(null);
       
       console.log('캡처된 이미지 처리 시작');
       
-      // 이미지 정보 로깅 (크기 확인용)
-      const imageSize = capturedImage.length;
-      console.log(`이미지 데이터 크기: ${imageSize} 바이트`);
-      
-      // 이미지와 성별, 스타일 정보를 localStorage에 저장
-      localStorage.setItem('capturedImage', capturedImage);
+      // 성별, 스타일 정보를 localStorage에 저장
       localStorage.setItem('selectedGender', selectedGender);
       localStorage.setItem('selectedStyle', selectedStyle);
       
-      console.log(`이미지 저장 완료: 성별=${selectedGender}, 스타일=${selectedStyle}`);
+      console.log(`이미지 저장 완료: ${savedImages.length}장, 성별=${selectedGender}, 스타일=${selectedStyle}`);
       
       // 이제 스타일은 이미 선택됐으므로 바로 로딩 페이지로 이동
       setLoading(false);
-      navigate('/Loading');
+      navigate('/Picture_Select');
     } catch (error) {
       console.error('이미지 저장 오류:', error);
       setLoading(false);
@@ -208,30 +235,39 @@ const goBack = () => {
         </div>
       </Row>
       <Row className="three" style={{ marginTop: "30px", textAlign: "center" }}>
-        <Col>
+        <Col style={{ zIndex:2 }}>
           {/* 촬영 버튼 */}
           <button onClick={handleCapture} style={{ padding: "10px 20px", fontSize: "16px", marginRight: "10px" }}>
-            촬영하기
+            촬영하기 ({photoCount}/4)
           </button>
 
           {/* 저장 버튼 (캡처된 이미지 있을 때만 표시) */}
           {capturedImage && (
             <>
-              <button onClick={handleDownload} style={{ padding: "10px 20px", fontSize: "16px", marginRight: "10px" }}>
+              <button onClick={handleDownload} style={{ padding: "10px 20px", fontSize: "16px", marginRight: "10px", zIndex:3 }}>
                 이미지 저장
               </button>
               
               {/* 타투 생성 버튼 추가 */}
               <button 
-                // onClick={sendImageToBackend}
-                onClick={() => navigate("/Picture_Select")}
-                disabled={loading}
-                style={{ padding: "10px 20px", fontSize: "16px", backgroundColor: loading ? "#ccc" : "#007bff", color: "white" }}
+                onClick={sendImageToBackend}
+                disabled={loading || photoCount === 0}
+                style={{ 
+                  padding: "10px 20px", 
+                  fontSize: "16px", 
+                  backgroundColor: loading || photoCount === 0 ? "#ccc" : "#007bff", 
+                  color: "white" 
+                }}
               >
                 {loading ? "처리 중..." : "타투 생성하기"}
               </button>
             </>
           )}
+          
+          {/* 촬영된 사진 개수 표시 */}
+          <div style={{ marginTop: "10px", fontSize: "14px", fontWeight: "bold" }}>
+            촬영된 사진: {photoCount}장 / 최대 4장
+          </div>
           
           {/* 선택된 성별 정보 표시 */}
           <div style={{ marginTop: "10px", fontSize: "14px" }}>

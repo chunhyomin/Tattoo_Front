@@ -15,11 +15,6 @@ import b from "../buttons/b.png"
 import c from "../buttons/c.png"
 import d from "../buttons/d.png"
 
-import picture1 from "../picture/picture1.png";
-import picture2 from "../picture/picture2.png";
-import picture3 from "../picture/picture3.png";
-import picture4 from "../picture/picture4.png";
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Picture_Select.css";
 import "../App.css";
@@ -41,14 +36,36 @@ function App() {
   const [fontSize, setFontSize] = useState(16);
   const bubbleRef = useRef(null);
   const [selectedPictureIndex, setSelectedPictureIndex] = useState(null);
+  const [capturedImages, setCapturedImages] = useState([]);
+  const [selectedStyle, setSelectedStyle] = useState(null);
 
-  const pictureList = [picture1, picture2, picture3, picture4];
+  useEffect(() => {
+    const savedImages = JSON.parse(localStorage.getItem('capturedImages') || '[]');
+    setCapturedImages(savedImages);
+    
+    if (savedImages.length === 0) {
+      alert("저장된 사진이 없습니다. 사진 촬영 페이지로 이동합니다.");
+      navigate('/Picture');
+    }
+  }, [navigate]);
 
   const handleImageClick = (index, src) => {
-    const fileName = src.split("/").pop();
-    console.log("선택한 파일명:", fileName);
+    console.log("선택한 이미지 인덱스:", index);
     setSelectedPictureIndex(index);
-    sessionStorage.setItem("selectedPicture", src); // 선택된 이미지 저장
+    sessionStorage.setItem("selectedPicture", src);
+  };
+
+  const handleStyleClick = (index) => {
+    setSelectedStyle(index);
+    sessionStorage.setItem("selectedStyle", index);
+  };
+
+  const handleNextClick = () => {
+    if (selectedPictureIndex !== null && selectedStyle !== null) {
+      navigate('/Loading_h');
+    } else {
+      alert("사진과 스타일을 모두 선택해주세요.");
+    }
   };
 
   useEffect(() => {
@@ -95,9 +112,8 @@ function App() {
           <img src={leaf} alt="나뭇잎" className="leaf-img" />
         </div>
 
-        {/* 사진 영역 */}
         <div className="picture-row mt-5">
-          {pictureList.map((pic, index) => (
+          {capturedImages.map((pic, index) => (
             <div key={index}>
               <img
                 src={pic}
@@ -110,20 +126,19 @@ function App() {
           ))}
         </div>
 
-                {/* 버튼 영역 */}
         <div className="button-row">
           {[a, b, c, d].map((btn, index) => (
             <img
               key={index}
               src={btn}
-              alt={`버튼${index + 1}`}
-              className="option-button"
-              onClick={() => console.log(`버튼 ${index + 1} 클릭됨`)}
+              alt={`스타일${index + 1}`}
+              className={`option-button ${selectedStyle === index ? "selected-style" : ""}`}
+              onClick={() => handleStyleClick(index)}
+              style={{ cursor: "pointer" }}
             />
           ))}
         </div>
 
-        {/* 캐릭터 + 말풍선 + 버튼 */}
         <Row className="character-row justify-content-center align-items-center mt-4">
           <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
             <img src={ch1} alt="캐릭터1" className="char-img" />
@@ -135,15 +150,15 @@ function App() {
               <div className="bubble-text">
                 <TextBox fontSize={fontSize}>{displayText}</TextBox>
               </div>
-{/* 
-              {selectedPictureIndex !== null && (
+
+              {selectedPictureIndex !== null && selectedStyle !== null && (
                 <img
                   src={btimg2}
-                  alt="버튼"
+                  alt="다음으로"
                   className="start-btn"
-                  onClick={() => navigate("/Loading_h")}
+                  onClick={handleNextClick}
                 />
-              )} */}
+              )}
             </div>
           </Col>
 

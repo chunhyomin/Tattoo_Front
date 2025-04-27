@@ -86,3 +86,9 @@
     max-width: 100px;
     }
 }
+
+/* 선택된 스타일에 대한 효과만 유지 */
+.selected-style {
+  transform: scale(1.1);
+  box-shadow: 0 0 17px 6px rgb(252, 218, 43);
+}

@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, ProgressBar } from "react-bootstrap";
+
 
 import logo from "/logo.png";
 import leaf from "/leaf.png";
@@ -13,6 +14,7 @@ import btimg from "/buttonimg.png";
 import d_bubble from "/dark_bubble.png";
 import d_cloud from "/dark_cloud.png";
 import cat from "/고양이.png";
+import iland from "/둥둥섬.png"
 
 
 
@@ -30,6 +32,7 @@ const TextBox = styled.p`
   line-height: 1.4;
 `;
 
+
 function App() {
   const navigate = useNavigate();
   const text =
@@ -38,6 +41,7 @@ function App() {
   const [loop, setLoop] = useState(0);
   const [fontSize, setFontSize] = useState(16);
   const bubbleRef = useRef(null);
+  const [progress, setProgress] = useState(65); // 예시 진행도, 백엔드에서 받아오면 업데이트 가능
 
   useEffect(() => {
     let index = 0;
@@ -75,7 +79,7 @@ function App() {
   }, []);
 
   return (
-    <div className="app1-background">
+    <div className="app2-background">
       <img src={d_cloud} className="cloud-bg" alt="배경" />
 
       <Container fluid className="text-center">
@@ -85,42 +89,41 @@ function App() {
 
         <Row className="justify-content-center mt-5">
           <Col xs={8} md={6}>
-            <img src={logo} alt="로고" className="logo-img" />
+            <img src={cat} alt="로고" className="cat" />
           </Col>
         </Row>
 
         <Row className="character-row justify-content-center align-items-center">
-          <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+          {/* <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
             <img src={ch1} alt="캐릭터1" className="char-img" />
-          </Col>
+          </Col> */}
 
-          <Col xs={12} sm={6} md={5}>
+          <Col xs={14} sm={8} md={8}>
             <div
-              className="bubble-container position-relative d-flex justify-content-center align-items-center"
+              className="d_bubble-container position-relative d-flex justify-content-center align-items-center"
               ref={bubbleRef}
             >
-              <img src={bubble} alt="말풍선" className="bubble-img w-100" />
+              <img src={d_bubble} alt="말풍선" className="bubble-img w-100" />
               <div
                 className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
                 style={{ padding: "2rem" }}
               >
                 <TextBox fontSize={fontSize}>{displayText}</TextBox>
               </div>
-              <img
-                src={btimg}
-                alt="시작 버튼"
-                className="start-btn"
-                onClick={() => navigate("/page2")}
-              />
             </div>
           </Col>
-          <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
-            <img src={ch2} alt="캐릭터2" className="char-img" />
+        </Row>
+        <Row className="justify-content-center align-items-center mt-4">
+          <Col xs={8} sm={6} md={8}>
+            { <ProgressBar now={progress} label={`${progress}%`} style={{ height: "30px" }} /> }
+          </Col>
+          <Col xs="auto">
+           <img src={iland} alt="캐릭터2" style={{ height: "60px" }} />
           </Col>
         </Row>
       </Container>
 
-      <div className="grass-bottom"></div>
+
     </div>
   );
 }
