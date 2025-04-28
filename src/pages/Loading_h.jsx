@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { Container, Row, Col, ProgressBar } from "react-bootstrap";
 
 
@@ -32,6 +32,16 @@ const TextBox = styled.p`
   line-height: 1.4;
 `;
 
+const float = keyframes`
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+`;
+
+const FloatingIsland = styled.img`
+  height: 90px; /* 원래 60px * 1.5 = 90px */
+  animation: ${float} 3s ease-in-out infinite;
+`;
 
 function App() {
   const navigate = useNavigate();
@@ -113,12 +123,12 @@ function App() {
             </div>
           </Col>
         </Row>
-        <Row className="justify-content-center align-items-center mt-4">
-          <Col xs={8} sm={6} md={8}>
-            { <ProgressBar now={progress} label={`${progress}%`} style={{ height: "30px" }} /> }
+        <Row className="justify-content-end align-items-center mt-4">
+          <Col xs={6} sm={12} md={10}>
+            <ProgressBar now={progress} label={`${progress}%`} style={{ height: "30px" }} />
           </Col>
           <Col xs="auto">
-           <img src={iland} alt="캐릭터2" style={{ height: "60px" }} />
+            <FloatingIsland src={iland} alt="캐릭터2" />
           </Col>
         </Row>
       </Container>
