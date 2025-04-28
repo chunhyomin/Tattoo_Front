@@ -42,13 +42,15 @@ function App() {
   const [selectedGender, setSelectedGender] = useState('male'); // 기본값 male
   const [selectedStyle, setSelectedStyle] = useState('simple'); // 기본값 simple
   const [photoCount, setPhotoCount] = useState(0); // 촬영된 사진 개수 상태 추가
+  const [isTimerActive, setIsTimerActive] = useState(false); // 타이머 활성화 상태
+  const [timerCount, setTimerCount] = useState(3); // 타이머 카운트다운 (3초)
+  const [capturedImages, setCapturedImages] = useState([]); // 사진 배열을 직접 상태로 관리
 
-  // 성별 정보 로드
+  // 성별 정보 로드 - 원래 기능대로 localStorage 초기화 복원
   useEffect(() => {
-    // localStorage에서 capturedImages 완전히 제거
+    // 페이지 로드 시 localStorage 및 상태 초기화
     localStorage.removeItem('capturedImages');
-    
-    // photoCount 초기화
+    setCapturedImages([]);
     setPhotoCount(0);
     
     const savedGender = localStorage.getItem('selectedGender');
@@ -64,9 +66,10 @@ function App() {
     }
   }, []);
 
-  // 이미 저장된 사진 개수 확인
+  // 이미 저장된 사진 개수 확인 - 중복 로직이지만 기존 코드 유지
   useEffect(() => {
     const savedImages = JSON.parse(localStorage.getItem('capturedImages') || '[]');
+    console.log("사진 개수 확인:", savedImages.length); // 디버깅 로그 추가
     setPhotoCount(savedImages.length);
   }, []);
 
@@ -107,13 +110,10 @@ function App() {
 
   let videoRef = useRef(null)
 
-
-
   //사용자 웹캠에 접근
   const canvasRef = useRef(null); // 캡처용 캔버스 ref
   const [capturedImage, setCapturedImage] = useState(null); // 캡처 이미지 상태
   
-
   const getUserCamera = () =>{
     navigator.mediaDevices.getUserMedia({
       video:true
@@ -135,92 +135,118 @@ function App() {
     getUserCamera()
   },[videoRef])
 
-
-
-const handleCapture = () => { //화면 캡쳐쳐
-  const video = videoRef.current;
-  const canvas = canvasRef.current;
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-
-  ctx.translate(canvas.width, 0); // 좌우반전 설정
-  ctx.scale(-1, 1);
-
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  const imageDataUrl = canvas.toDataURL("image/png"); //PC다운로드 폴더에 png로 저장
-  setCapturedImage(imageDataUrl);
-  
-  // 저장된 이미지 배열 가져오기
-  const savedImages = JSON.parse(localStorage.getItem('capturedImages') || '[]');
-  
-  // 최대 4장까지만 저장
-  if (savedImages.length < 4) {
-    savedImages.push(imageDataUrl);
-    localStorage.setItem('capturedImages', JSON.stringify(savedImages));
-    setPhotoCount(savedImages.length); // 사진 개수 상태 업데이트
-    console.log(`이미지 저장 완료: ${savedImages.length}장 저장됨`);
-  } else {
-    // 4장 이상인 경우 가장 오래된 이미지 대체
-    savedImages.shift(); // 첫 번째 이미지 제거
-    savedImages.push(imageDataUrl); // 새 이미지 추가
-    localStorage.setItem('capturedImages', JSON.stringify(savedImages));
-    console.log('최대 4장 초과. 가장 오래된 이미지가 대체되었습니다.');
-  }
-};
-
-
-
-const handleDownload = () => {
-  const base64Data = capturedImage.split(',')[1]; // 'data:image/png;base64,...' → base64 부분만 추출
-  const blob = new Blob([base64Data], { type: 'text/plain;charset=utf-8' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "encoded_image.txt";
-  link.click();
-};
-
-// 이미지 전송 함수 수정 - 이미지 저장 후 로딩 페이지로 이동
-const sendImageToBackend = async () => {
-  const savedImages = JSON.parse(localStorage.getItem('capturedImages') || '[]');
-  
-  if (savedImages.length > 0) {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      console.log('캡처된 이미지 처리 시작');
-      
-      // 성별, 스타일 정보를 localStorage에 저장
-      localStorage.setItem('selectedGender', selectedGender);
-      localStorage.setItem('selectedStyle', selectedStyle);
-      
-      console.log(`이미지 저장 완료: ${savedImages.length}장, 성별=${selectedGender}, 스타일=${selectedStyle}`);
-      
-      // 이제 스타일은 이미 선택됐으므로 바로 로딩 페이지로 이동
-      setLoading(false);
-      navigate('/Picture_Select');
-    } catch (error) {
-      console.error('이미지 저장 오류:', error);
-      setLoading(false);
-      setError('이미지 저장 중 오류가 발생했습니다.');
+  // 사진 촬영 버튼을 클릭했을 때의 핸들러
+  const handleCapture = () => {
+    // 이미 타이머가 활성화된 상태면 리턴
+    if (isTimerActive) return;
+    
+    // 이미 4장이 다 찍혔으면 리턴
+    if (capturedImages.length >= 4) {
+      setError('이미 4장을 모두 촬영했습니다. 타투 생성하기를 눌러주세요.');
+      return;
     }
-  } else {
-    setError('먼저 사진을 촬영해주세요.');
-  }
-};
+    
+    // 타이머 시작
+    setIsTimerActive(true);
+    setTimerCount(3);
+    
+    // 3초 카운트다운 시작
+    const timerInterval = setInterval(() => {
+      setTimerCount(prevCount => {
+        // 타이머가 0이 되면 실제 촬영 수행
+        if (prevCount <= 1) {
+          clearInterval(timerInterval);
+          captureImage(); // 실제 캡처 함수 호출
+          setIsTimerActive(false);
+          return 3; // 타이머 초기화
+        }
+        return prevCount - 1;
+      });
+    }, 1000);
+  };
 
-// 이전 페이지로 이동
-const goBack = () => {
-  navigate('/Gender_Select');
-};
+  // 실제 이미지 캡처 로직
+  const captureImage = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
 
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
 
+    ctx.translate(canvas.width, 0); // 좌우반전 설정
+    ctx.scale(-1, 1);
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const imageDataUrl = canvas.toDataURL("image/png");
+    setCapturedImage(imageDataUrl);
+    
+    // 현재 상태에서 직접 이미지 배열을 업데이트
+    if (capturedImages.length < 4) {
+      // 상태 및 localStorage 모두 업데이트
+      const newImages = [...capturedImages, imageDataUrl];
+      setCapturedImages(newImages);
+      setPhotoCount(newImages.length);
+      
+      // localStorage 업데이트
+      localStorage.setItem('capturedImages', JSON.stringify(newImages));
+      
+      console.log(`이미지 저장 완료: ${newImages.length}/4장 저장됨`);
+      
+      // 4장을 모두 찍었으면 안내 메시지 표시
+      if (newImages.length === 4) {
+        setError('4장의 사진이 모두 촬영되었습니다. 타투 생성하기를 눌러주세요.');
+      }
+    }
+  };
+
+  const handleDownload = () => {
+    const base64Data = capturedImage.split(',')[1]; // 'data:image/png;base64,...' → base64 부분만 추출
+    const blob = new Blob([base64Data], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "encoded_image.txt";
+    link.click();
+  };
+
+  // 이미지 전송 함수
+  const sendImageToBackend = async () => {
+    if (capturedImages.length === 4) { // 정확히 4장인 경우에만 다음 단계로 진행
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('캡처된 이미지 처리 시작');
+        
+        // 성별, 스타일 정보를 localStorage에 저장
+        localStorage.setItem('selectedGender', selectedGender);
+        localStorage.setItem('selectedStyle', selectedStyle);
+        
+        // localStorage에도 최종 이미지 저장 (혹시 모를 불일치 방지)
+        localStorage.setItem('capturedImages', JSON.stringify(capturedImages));
+        
+        console.log(`이미지 저장 완료: ${capturedImages.length}장, 성별=${selectedGender}, 스타일=${selectedStyle}`);
+        
+        // 이제 스타일은 이미 선택됐으므로 바로 로딩 페이지로 이동
+        setLoading(false);
+        navigate('/Picture_Select');
+      } catch (error) {
+        console.error('이미지 저장 오류:', error);
+        setLoading(false);
+        setError('이미지 저장 중 오류가 발생했습니다.');
+      }
+    } else {
+      setError('4장의 사진을 모두 촬영해주세요. 현재 ' + capturedImages.length + '장이 촬영되었습니다.');
+    }
+  };
+
+  // 이전 페이지로 이동
+  const goBack = () => {
+    navigate('/Gender_Select');
+  };
 
   return (
-    
     <Container style={{ minHeight: "120vh" }}>
       <Row className="one">
         <div className="App">
@@ -231,42 +257,73 @@ const goBack = () => {
           ref={videoRef}
           style={{ transform: "scaleX(-1)" }} // 좌우 반전 적용
         ></video>
+        {/* 타이머 활성화 시 카운트다운 오버레이 표시 */}
+        {isTimerActive && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: '100px',
+            fontWeight: 'bold',
+            color: 'white',
+            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.7)',
+            zIndex: 10
+          }}>
+            {timerCount}
+          </div>
+        )}
         </Col>
         </div>
       </Row>
       <Row className="three" style={{ marginTop: "30px", textAlign: "center" }}>
         <Col style={{ zIndex:2 }}>
           {/* 촬영 버튼 */}
-          <button onClick={handleCapture} style={{ padding: "10px 20px", fontSize: "16px", marginRight: "10px" }}>
-            촬영하기 ({photoCount}/4)
+          <button 
+            onClick={handleCapture} 
+            disabled={isTimerActive || capturedImages.length >= 4}
+            style={{ 
+              padding: "10px 20px", 
+              fontSize: "16px", 
+              marginRight: "10px",
+              opacity: (isTimerActive || capturedImages.length >= 4) ? 0.6 : 1 
+            }}
+          >
+            {isTimerActive ? `${timerCount}초 후 촬영` : 
+             (capturedImages.length >= 4 ? '촬영 완료' : `촬영하기 (${capturedImages.length}/4)`)}
           </button>
 
-          {/* 저장 버튼 (캡처된 이미지 있을 때만 표시) */}
+          {/* 타투 생성 버튼 */}
+          <button 
+            onClick={sendImageToBackend}
+            disabled={loading || capturedImages.length < 4}
+            style={{ 
+              padding: "10px 20px", 
+              fontSize: "16px", 
+              backgroundColor: loading || capturedImages.length < 4 ? "#ccc" : "#007bff", 
+              color: "white",
+              marginRight: "10px"
+            }}
+          >
+            {loading ? "처리 중..." : "타투 생성하기"}
+          </button>
+          
+          {/* 이미지 저장 버튼 */}
           {capturedImage && (
-            <>
-              <button onClick={handleDownload} style={{ padding: "10px 20px", fontSize: "16px", marginRight: "10px", zIndex:3 }}>
-                이미지 저장
-              </button>
-              
-              {/* 타투 생성 버튼 추가 */}
-              <button 
-                onClick={sendImageToBackend}
-                disabled={loading || photoCount === 0}
-                style={{ 
-                  padding: "10px 20px", 
-                  fontSize: "16px", 
-                  backgroundColor: loading || photoCount === 0 ? "#ccc" : "#007bff", 
-                  color: "white" 
-                }}
-              >
-                {loading ? "처리 중..." : "타투 생성하기"}
-              </button>
-            </>
+            <button 
+              onClick={handleDownload} 
+              style={{ 
+                padding: "10px 20px", 
+                fontSize: "16px"
+              }}
+            >
+              이미지 저장
+            </button>
           )}
           
           {/* 촬영된 사진 개수 표시 */}
           <div style={{ marginTop: "10px", fontSize: "14px", fontWeight: "bold" }}>
-            촬영된 사진: {photoCount}장 / 최대 4장
+            촬영된 사진: {capturedImages.length}장 / 최대 4장
           </div>
           
           {/* 선택된 성별 정보 표시 */}
@@ -291,54 +348,45 @@ const goBack = () => {
         </Col>
       </Row>
 
-{/* 비디오 캡처용 임시 코드 */}
-      {/* {capturedImage && (
-      <Row className="four" style={{ marginTop: "20px", textAlign: "center" }}>
-        <Col>
-          <img src={capturedImage} alt="캡처 미리보기" style={{ maxWidth: "100%", border: "2px solid #ccc" }} />
+      <canvas ref={canvasRef} style={{ display: "none" }} />
+
+      <Row className="character-row justify-content-center align-items-center">
+        <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+          <img src={ch1} alt="캐릭터1" className="char-img" />
         </Col>
-      </Row>
-      )} */}
-
-
-<canvas ref={canvasRef} style={{ display: "none" }} />
-
-        <Row className="character-row justify-content-center align-items-center">
-          <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
-            <img src={ch1} alt="캐릭터1" className="char-img" />
-          </Col>
-          <Col xs={12} sm={6} md={5}>
+        <Col xs={12} sm={6} md={5}>
+          <div
+            className="bubble-container position-relative d-flex justify-content-center align-items-center"
+            ref={bubbleRef}
+          >
+            <img src={bubble} alt="말풍선" className="bubble-img w-100" />
             <div
-              className="bubble-container position-relative d-flex justify-content-center align-items-center"
-              ref={bubbleRef}
+              className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+              style={{ padding: "2rem" }}
             >
-              <img src={bubble} alt="말풍선" className="bubble-img w-100" />
-              <div
-                className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                style={{ padding: "2rem" }}
-              >
-                <TextBox fontSize={fontSize}>{displayText}</TextBox>
-              </div>
+              <TextBox fontSize={fontSize}>{displayText}</TextBox>
+            </div>
 
             {/* 버튼 이미지 - 촬영하기 기능으로 변경 */}
             <img
               className="button-img"
               src={btimg}
-              onClick={handleCapture}
+              onClick={isTimerActive || capturedImages.length >= 4 ? null : handleCapture}
               style={{
                 width: "150px",
                 marginTop: "20px",
-                cursor: "pointer",
+                cursor: (isTimerActive || capturedImages.length >= 4) ? "default" : "pointer",
+                opacity: (isTimerActive || capturedImages.length >= 4) ? 0.6 : 1,
               }}
               alt="촬영 버튼"
             />
-            </div>
-          </Col>
-          <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
-            <img src={ch2} alt="캐릭터2" className="char-img" />
-          </Col>
-        </Row>
-      </Container>
+          </div>
+        </Col>
+        <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+          <img src={ch2} alt="캐릭터2" className="char-img" />
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
