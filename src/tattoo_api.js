@@ -3,8 +3,8 @@
  * 프론트엔드에서 백엔드 API 통신을 담당하는 모듈
  */
 
-// API 엔드포인트 설정
-const API_URL = 'http://localhost:5000';
+// API 엔드포인트 설정 - 상대 경로로 변경하여 CORS 이슈 해결
+const API_URL = '';  // 상대 경로로 변경
 
 /**
  * 서버 상태를 체크하는 함수
@@ -108,37 +108,137 @@ export const analyzeAnimal = async (imageData) => {
  */
 export const generateTattoo = async (image, gender, style) => {
   try {
-    // 데모 목적으로 API 호출을 시뮬레이션합니다
-    // 실제 서비스에서는 아래 주석 해제 후 사용
-    /*
-    const response = await fetch(`${API_URL}/generate-tattoo`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        image,
-        gender,
-        style
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`API 오류: ${response.status}`);
-    }
-
-    return await response.json();
-    */
-
-    // 데모용 시뮬레이션 응답
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    console.log('타투 생성 API 호출 시작', { gender, style });
     
-    return {
-      animalType: '호랑이',
-      tattooImage: '/tiger-tattoo.png',
-      description: '당신의 성격은 리더십이 강하고 용감한 호랑이와 닮았습니다. 강인함과 우아함을 동시에 지닌 이 타투는 당신의 강한 의지를 표현합니다.',
-      traits: ['용맹', '리더십', '결단력', '카리스마']
+    // 이미지 변환
+    const imageBlob = base64ToBlob(image);
+    console.log('이미지 Blob 생성 완료:', imageBlob.size, 'bytes');
+    
+    // FormData 객체 생성
+    const formData = new FormData();
+    formData.append('image', imageBlob, 'user_image.jpg');
+    formData.append('gender', gender);
+    formData.append('style', style);
+    
+    // 실제 API 호출 - 헤더 수정 및 credentials 옵션 변경
+    const response = await fetch(`/api/generate-tattoo`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json'
+      },
+      credentials: 'same-origin' // same-origin으로 변경
+    });
+    
+    console.log('API 응답 상태:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API 오류 (${response.status}):`, errorText);
+      throw new Error(`API 오류 (${response.status}): ${errorText}`);
+    }
+    
+    // API 응답 데이터 확인 (디버깅용)
+    const responseText = await response.text();
+    console.log('원본 API 응답:', responseText);
+    
+    let result;
+    try {
+      // 텍스트 응답을 JSON으로 파싱
+      result = JSON.parse(responseText);
+      console.log('파싱된 타투 생성 결과:', result);
+    } catch (parseError) {
+      console.error('JSON 파싱 오류:', parseError);
+      // 응답이 JSON이 아닌 경우 기본 응답 생성
+      result = {
+        status: 'error',
+        message: '응답을 파싱할 수 없습니다',
+        rawResponse: responseText.substring(0, 500) // 응답의 일부분만 저장
+      };
+    }
+    
+    // 이미지 경로 처리 함수
+    const processImagePath = (path) => {
+      if (!path) return '';
+      
+      if (typeof path === 'string') {
+        // 서버 파일 시스템 경로인 경우 (예: /home/aitattoo/...)
+        if (path.startsWith('/home/')) {
+          const fileName = path.split('/').pop();
+          return `/api/images/${fileName}`;
+        }
+        // 상대 경로인 경우 (예: shares/...)
+        else if (!path.startsWith('http') && !path.startsWith('data:') && !path.startsWith('/api/')) {
+          return `/api/images/${path.replace(/^\//, '')}`;
+        }
+      }
+      
+      return path;
     };
+    
+    // 응답의 이미지 경로 처리
+    
+    // 단일 타투 이미지 처리
+    if (result.tattooImage && typeof result.tattooImage === 'string') {
+      result.tattooImage = processImagePath(result.tattooImage);
+    }
+    
+    // 타투 이미지 배열 처리
+    if (result.tattoo_images && Array.isArray(result.tattoo_images)) {
+      result.tattoo_images = result.tattoo_images.map(img => {
+        if (typeof img === 'string') {
+          return processImagePath(img);
+        }
+        return img;
+      });
+    }
+    
+    // 레터링 이미지 처리
+    if (result.lettering_image && typeof result.lettering_image === 'string') {
+      result.lettering_image = processImagePath(result.lettering_image);
+    } else if (result.letteringImage && typeof result.letteringImage === 'string') {
+      result.lettering_image = processImagePath(result.letteringImage);
+      result.letteringImage = result.lettering_image;
+    }
+    
+    // 최종 결과 이미지 처리
+    if (result.final_display_image && typeof result.final_display_image === 'string') {
+      result.final_display_image = processImagePath(result.final_display_image);
+    } else if (result.finalDisplayImage && typeof result.finalDisplayImage === 'string') {
+      result.final_display_image = processImagePath(result.finalDisplayImage);
+      result.finalDisplayImage = result.final_display_image;
+    }
+    
+    // 동물 타입 추출
+    if (!result.animal_type && !result.animalType) {
+      // 로그에서 animal_type을 찾아보기
+      const animalTypeMatch = responseText.match(/"animal_type"\s*:\s*"([^"]+)"/);
+      if (animalTypeMatch && animalTypeMatch[1]) {
+        result.animal_type = animalTypeMatch[1];
+      } 
+      // 파일 이름에서 동물 타입 추출 시도
+      else if (result.tattoo_images && result.tattoo_images.length > 0) {
+        const fileNameMatch = result.tattoo_images[0].match(/_(.*?)_/);
+        if (fileNameMatch && fileNameMatch[1]) {
+          result.animal_type = fileNameMatch[1];
+        }
+      } else if (result.tattooImage) {
+        const fileNameMatch = result.tattooImage.match(/_(.*?)_/);
+        if (fileNameMatch && fileNameMatch[1]) {
+          result.animal_type = fileNameMatch[1];
+        }
+      }
+      
+      // 필드 동기화
+      if (result.animal_type && !result.animalType) {
+        result.animalType = result.animal_type;
+      } else if (!result.animal_type && result.animalType) {
+        result.animal_type = result.animalType;
+      }
+    }
+    
+    console.log('최종 처리된 결과:', result);
+    return result;
   } catch (error) {
     console.error('타투 생성 오류:', error);
     throw error;
@@ -203,12 +303,21 @@ export async function setTattooStyle(imageId, style) {
  * @returns {string} - 전체 URL
  */
 export function getImageUrl(imagePath) {
-  if (imagePath && imagePath.startsWith('/')) {
-    return `${API_URL}${imagePath}`;
-  } else if (imagePath && imagePath.startsWith('http')) {
-    return imagePath;
+  if (!imagePath) return '';
+  
+  if (imagePath.startsWith('data:')) {
+    return imagePath; // 이미 base64 데이터 URL인 경우
+  } else if (imagePath.startsWith('http')) {
+    return imagePath; // 이미 완전한 URL인 경우
+  } else if (imagePath.startsWith('/api/')) {
+    return imagePath; // API 경로인 경우
+  } else if (imagePath.startsWith('/home/')) {
+    const fileName = imagePath.split('/').pop();
+    return `/api/images/${fileName}`; // 서버 경로인 경우 파일명만 추출
+  } else if (imagePath.startsWith('/')) {
+    return `${API_URL}${imagePath}`; // 루트 상대 경로인 경우
   } else {
-    return `${API_URL}/images/${imagePath}`;
+    return `${API_URL}/api/images/${imagePath}`; // 다른 모든 경우
   }
 }
 

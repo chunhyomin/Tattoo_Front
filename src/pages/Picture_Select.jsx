@@ -73,6 +73,24 @@ function App() {
 
   const handleNextClick = () => {
     if (selectedPictureIndex !== null && selectedStyle !== null) {
+      // 선택된 이미지
+      const selectedImage = capturedImages[selectedPictureIndex];
+      
+      // 선택된 이미지 정보 저장
+      sessionStorage.setItem("selectedPictureData", selectedImage);
+      sessionStorage.setItem("selectedPictureIndex", selectedPictureIndex);
+      
+      // 선택된 스타일 값
+      const styleValue = STYLE_TYPES[selectedStyle].value;
+      sessionStorage.setItem("selectedStyleValue", styleValue);
+      sessionStorage.setItem("selectedStyleName", STYLE_TYPES[selectedStyle].name);
+      
+      console.log('다음 단계로 이동:', {
+        imageIndex: selectedPictureIndex,
+        style: styleValue
+      });
+      
+      // 로딩 페이지로 이동
       navigate('/Loading_h');
     } else {
       alert("사진과 스타일을 모두 선택해주세요.");

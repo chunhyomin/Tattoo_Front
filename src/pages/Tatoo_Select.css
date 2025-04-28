@@ -35,6 +35,49 @@
     border-radius: 20px;
     }
 
+    /* 배너와 설명 스타일 */
+    .banner {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 8px 20px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: -15px;
+    position: relative;
+    z-index: 2;
+    }
+
+    .banner span {
+    font-weight: bold;
+    color: #555;
+    font-size: 1.2rem;
+    }
+
+    .animal-description {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    max-width: 300px;
+    margin: 0 auto;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .animal-traits {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 5px;
+    }
+
+    .trait-badge {
+    background-color: #41caa6;
+    color: white;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 15px;
+    display: inline-block;
+    font-weight: bold;
+    }
+
     .image-button {
     border: none;
     padding: 0;
