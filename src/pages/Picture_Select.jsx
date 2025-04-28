@@ -28,6 +28,14 @@ const TextBox = styled.p`
   word-break: keep-all;
 `;
 
+// 스타일 이름과 값 매핑
+const STYLE_TYPES = [
+  { key: 0, name: "심플하게", value: "simple" },
+  { key: 1, name: "귀엽게", value: "cute" },
+  { key: 2, name: "예쁘게", value: "pretty" },
+  { key: 3, name: "시크하게", value: "chic" }
+];
+
 function App() {
   const navigate = useNavigate();
   const text = "마음에 드는 사진 한 장과 원하는 스타일을 하나 선택해 주세요!";
@@ -57,7 +65,10 @@ function App() {
 
   const handleStyleClick = (index) => {
     setSelectedStyle(index);
-    sessionStorage.setItem("selectedStyle", index);
+    const styleValue = STYLE_TYPES[index].value;
+    sessionStorage.setItem("selectedStyle", styleValue);
+    localStorage.setItem("selectedStyle", styleValue);
+    console.log("선택한 스타일:", STYLE_TYPES[index].name, "값:", styleValue);
   };
 
   const handleNextClick = () => {
@@ -128,14 +139,20 @@ function App() {
 
         <div className="button-row">
           {[a, b, c, d].map((btn, index) => (
-            <img
-              key={index}
-              src={btn}
-              alt={`스타일${index + 1}`}
-              className={`option-button ${selectedStyle === index ? "selected-style" : ""}`}
+            <div 
+              key={index} 
+              className="style-button-wrapper"
               onClick={() => handleStyleClick(index)}
               style={{ cursor: "pointer" }}
-            />
+            >
+              <img
+                src={btn}
+                alt={`스타일${index + 1}`}
+                className={`option-button ${selectedStyle === index ? "selected-style" : ""}`}
+                style={{ cursor: "pointer" }}
+              />
+              <p className="style-text">{STYLE_TYPES[index].name}</p>
+            </div>
           ))}
         </div>
 

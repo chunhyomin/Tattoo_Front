@@ -92,3 +92,38 @@
   transform: scale(1.1);
   box-shadow: 0 0 17px 6px rgb(252, 218, 43);
 }
+
+/* 스타일 버튼 텍스트 관련 스타일 */
+.style-button-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 10px;
+}
+
+.style-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #8B8B8B;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+  z-index: 2;
+  pointer-events: none; /* 텍스트에 마우스 이벤트 비활성화 */
+}
+
+@media screen and (max-width: 768px) {
+  .style-text {
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .style-text {
+    font-size: 10px;
+  }
+}
