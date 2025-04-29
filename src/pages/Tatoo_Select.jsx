@@ -260,16 +260,16 @@
             </Col>
 
             {/* 중간: 타투 선택 */}
-            <Col xs={12} sm={12} md={4}>
-                <Row className="g-2 justify-content-center">
-                {/* API에서 받은 타투 이미지들 표시 */}
-                {tattooImages.map((imgSrc, i) => (
-                    <Col xs={6} sm={6} md={6} key={`api-tattoo-${i}`}>
+            <Col xs={12} sm={12} md={4} className="d-flex justify-content-center align-items-center">
+                <div className="tattoo-grid-fixed">
+                {/* API에서 받은 타투 이미지들 표시 - 최대 4개(2x2 그리드) */}
+                {tattooImages.slice(0, 4).map((imgSrc, i) => (
+                    <div className="square-tattoo-container" key={`api-tattoo-${i}`}>
                     <button className="image-button" onClick={() => handleTatooClick(imgSrc)}>
                         <img
                         src={imgSrc}
                         alt={`타투 ${i + 1}`}
-                        className={`img-fluid tattoo-img ${
+                        className={`tattoo-img ${
                             selectedTattoos.includes(imgSrc) ? "selected" : ""
                         }`}
                         onError={(e) => {
@@ -279,29 +279,16 @@
                         }}
                         />
                     </button>
-                    </Col>
+                    </div>
                 ))}
                 
-                {/* 최종 디스플레이 이미지가 있고 tattooImages에 없는 경우 표시 */}
-                {finalDisplayImage && !tattooImages.some(img => img === finalDisplayImage) && (
-                    <Col xs={6} sm={6} md={6}>
-                    <button className="image-button" onClick={() => handleTatooClick(finalDisplayImage)}>
-                        <img
-                        src={finalDisplayImage}
-                        alt="최종 디스플레이"
-                        className={`img-fluid tattoo-img ${
-                            selectedTattoos.includes(finalDisplayImage) ? "selected" : ""
-                        }`}
-                        onError={(e) => {
-                            console.error("최종 디스플레이 이미지 로드 오류:", e);
-                            e.target.onerror = null; // 무한 루프 방지
-                            e.target.style.display = 'none'; // 오류 발생 시 숨김 처리
-                        }}
-                        />
-                    </button>
-                    </Col>
-                )}
-                </Row>
+                {/* 고정된 2x2 그리드 형태를 유지하기 위해 빈 자리를 채움 */}
+                {tattooImages.length < 4 && Array.from({ length: 4 - tattooImages.length }).map((_, i) => (
+                    <div className="square-tattoo-container" key={`empty-tattoo-${i}`}>
+                        <div className="empty-tattoo-space"></div>
+                    </div>
+                ))}
+                </div>
             </Col>
 
             {/* 오른쪽: 도안 미리보기 */}
