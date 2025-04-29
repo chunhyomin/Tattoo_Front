@@ -182,7 +182,10 @@ function App() {
           <Col xs={12} sm={6} md={5} className="position-relative">
             <div className="bubble-container" ref={bubbleRef}>
               <img src={bubble} alt="말풍선" className="bubble-img" />
-              <div className="bubble-text">
+              <div
+                className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                style={{ padding: "2rem" }}
+              >
                 <TextBox fontSize={fontSize}>{displayText}</TextBox>
               </div>
 

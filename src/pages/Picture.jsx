@@ -368,7 +368,7 @@ function App() {
             </div>
 
             {/* 버튼 이미지 - 촬영하기 기능으로 변경 */}
-            <img
+            {/* <img
               className="button-img"
               src={btimg}
               onClick={isTimerActive || capturedImages.length >= 4 ? null : handleCapture}
@@ -379,7 +379,7 @@ function App() {
                 opacity: (isTimerActive || capturedImages.length >= 4) ? 0.6 : 1,
               }}
               alt="촬영 버튼"
-            />
+            /> */}
           </div>
         </Col>
         <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">

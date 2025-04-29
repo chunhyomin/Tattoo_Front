@@ -49,6 +49,15 @@ const LOADING_MESSAGES = [
   "거의 완료되었어요! 조금만 기다려주세요..."
 ];
 
+// 에러 메시지 매핑
+const ERROR_MESSAGES = {
+  "No face detected": "얼굴이 인식되지 않았습니다. 다른 사진을 시도해주세요.",
+  "Multiple faces detected": "여러 개의 얼굴이 인식되었습니다. 한 사람만 나온 사진을 사용해주세요.",
+  "Face too small": "얼굴이 너무 작게 인식됩니다. 더 가까이서 촬영해주세요.",
+  "Invalid image format": "이미지 형식이 올바르지 않습니다. 다시 시도해주세요.",
+  "Failed to process image": "이미지 처리에 실패했습니다. 다른 사진을 시도해주세요."
+};
+
 function App() {
   const navigate = useNavigate();
   const text = "당신의 이미지를 분석하여 멋진 타투를 생성하고 있어요. 잠시만 기다려주세요!";
@@ -61,6 +70,7 @@ function App() {
   const [loadingError, setLoadingError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [animalType, setAnimalType] = useState("");
+  const [redirectCountdown, setRedirectCountdown] = useState(null);
   
   // 타투 생성 API 호출
   useEffect(() => {
@@ -105,6 +115,7 @@ function App() {
           clearInterval(progressInterval);
           setLoadingError("필요한 정보가 없습니다. 이전 페이지로 돌아가 다시 시도해주세요.");
           setIsProcessing(false);
+          setRedirectCountdown(10); // 10초 카운트다운 시작
           return;
         }
         
@@ -119,6 +130,18 @@ function App() {
           
           if (result) {
             console.log("API 결과 수신:", result);
+            
+            // 오류 응답 처리
+            if (result.error || result.status === 'error') {
+              const errorMessage = result.message || result.error || "알 수 없는 오류가 발생했습니다.";
+              // 얼굴 인식 관련 오류 확인
+              const userFriendlyMessage = ERROR_MESSAGES[errorMessage] || "알 수 없는 오류가 발생했습니다.";
+              
+              setLoadingError(userFriendlyMessage);
+              setIsProcessing(false);
+              setRedirectCountdown(10); // 10초 카운트다운 시작
+              return;
+            }
             
             // 동물 타입 확인 및 설정
             const animalTypeValue = result.animal_type || result.animalType;
@@ -141,14 +164,13 @@ function App() {
             // 진행 상태 100%로 설정
             updateProgress(100);
             
-            // 잠시 후 결과 페이지로 이동
+            // 성공 시에는 타투 선택 페이지로 이동
             setTimeout(() => {
-              setIsProcessing(false);
               navigate('/Tatoo_Select');
             }, 1500);
           } else {
             console.error("API 응답이 없습니다");
-            throw new Error("API에서 결과를 받지 못했습니다.");
+            throw new Error("알 수 없는 오류가 발생했습니다.");
           }
         } catch (apiError) {
           console.error("API 호출 처리 중 오류:", apiError);
@@ -157,24 +179,54 @@ function App() {
           clearInterval(progressInterval);
           updateProgress(90);
           
-          setLoadingError(`타투 생성 API 오류: ${apiError.message}`);
+          // 에러 메시지 표시 개선 - 사용자 친화적인 메시지로 변환
+          const errorMessage = apiError.message || "API 오류가 발생했습니다.";
+          // 얼굴 인식 관련 오류인지 확인, 아니면 일반 오류 메시지 표시
+          const userFriendlyMessage = ERROR_MESSAGES[errorMessage] || "알 수 없는 오류가 발생했습니다. 관리자에게 문의 바랍니다.";
           
-          // 2초 후 실패해도 다음 페이지로 이동
-          setTimeout(() => {
-            setIsProcessing(false);
-            navigate('/Tatoo_Select');
-          }, 2000);
+          setLoadingError(userFriendlyMessage);
+          setIsProcessing(false);
+          setRedirectCountdown(10); // 10초 카운트다운 시작
         }
       } catch (error) {
         console.error("타투 생성 전체 프로세스 오류:", error);
         clearInterval(progressInterval);
-        setLoadingError(`타투 생성 중 오류가 발생했습니다: ${error.message}`);
+        
+        // 사용자 친화적인 메시지로 변환
+        const errorMessage = error.message || "알 수 없는 오류가 발생했습니다.";
+        // 얼굴 인식 관련 오류인지 확인, 아니면 일반 오류 메시지 표시
+        const userFriendlyMessage = ERROR_MESSAGES[errorMessage] || "알 수 없는 오류가 발생했습니다.";
+        
+        setLoadingError(userFriendlyMessage);
         setIsProcessing(false);
+        setRedirectCountdown(10); // 10초 카운트다운 시작
       }
     };
     
     callTattooGenerationApi();
   }, [navigate]);
+
+  // 카운트다운 타이머 효과
+  useEffect(() => {
+    if (redirectCountdown !== null && redirectCountdown > 0) {
+      console.log(`카운트다운: ${redirectCountdown}초`); // 디버깅용 로그
+      
+      const countdownInterval = setInterval(() => {
+        setRedirectCountdown(prev => {
+          console.log(`카운트다운 감소: ${prev - 1}초`); // 디버깅용 로그
+          return prev - 1;
+        });
+      }, 1000);
+      
+      return () => {
+        console.log("카운트다운 타이머 정리"); // 디버깅용 로그
+        clearInterval(countdownInterval);
+      };
+    } else if (redirectCountdown === 0) {
+      console.log("카운트다운 완료: 페이지 이동"); // 디버깅용 로그
+      navigate('/Picture'); // 사진 촬영 페이지로 리다이렉트
+    }
+  }, [redirectCountdown, navigate]);
 
   useEffect(() => {
     let index = 0;
@@ -213,7 +265,7 @@ function App() {
 
   // 오류 발생 시 이전 페이지로 이동
   const handleGoBack = () => {
-    navigate('/Picture_Select');
+    navigate('/Picture');
   };
 
   // 현재 로딩 메시지 가져오기
@@ -236,6 +288,7 @@ function App() {
   };
 
   return (
+    
     <div className="app2-background">
       <img src={d_cloud} className="cloud-bg" alt="배경" />
 
@@ -263,37 +316,36 @@ function App() {
               >
                 {loadingError ? (
                   <div>
-                    <TextBox fontSize={fontSize} style={{ color: '#ff6b6b' }}>
+                    <TextBox fontSize={fontSize} style={{ color: '#ff3333', fontWeight: 'bold' }}>
                       {loadingError}
-                    </TextBox>
-                    {/* 오류가 있어도 다음 페이지로 이동하는 버튼 추가 */}
-                    <div className="mt-2">
-                      <button 
-                        onClick={() => navigate('/Tatoo_Select')}
-                        style={{ 
-                          marginRight: '10px',
-                          padding: '8px 15px', 
-                          background: '#41caa6', 
-                          color: 'white', 
-                          border: 'none', 
+                      {redirectCountdown !== null && (
+                        <div style={{ 
+                          marginTop: '15px', 
+                          fontSize: '1.1em',
+                          padding: '5px',
+                          background: 'rgba(255, 51, 51, 0.1)',
                           borderRadius: '5px',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        결과 보기
-                      </button>
+                          color: '#ff3333'
+                        }}>
+                          <b>{redirectCountdown}</b>초 후 사진 촬영 페이지로 돌아갑니다.
+                        </div>
+                      )}
+                    </TextBox>
+                    <div className="mt-4">
                       <button 
                         onClick={handleGoBack}
                         style={{ 
-                          padding: '8px 15px', 
-                          background: '#8B8B8B', 
+                          padding: '10px 20px', 
+                          background: '#333333', 
                           color: 'white', 
                           border: 'none', 
-                          borderRadius: '5px',
-                          fontWeight: 'bold'
+                          borderRadius: '30px',
+                          fontWeight: 'bold',
+                          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                          transition: 'all 0.3s ease'
                         }}
                       >
-                        다시 시도
+                        지금 돌아가기
                       </button>
                     </div>
                   </div>
@@ -308,6 +360,8 @@ function App() {
             </div>
           </Col>
         </Row>
+        
+        
         <Row className="justify-content-end align-items-center mt-4">
           <Col xs={6} sm={12} md={10}>
             <ProgressBar 
@@ -325,8 +379,31 @@ function App() {
             <FloatingIsland src={iland} alt="캐릭터2" />
           </Col>
         </Row>
+        <Row className="justify-content-center mt-5">
+  <Col xs={12}>
+  <div style={{
+  position: "fixed",
+  bottom: 0,
+  left: 0,
+  width: "100%",
+  backgroundColor: "#f1f3f5",
+  padding: "12px 0",
+  textAlign: "center",
+  borderTop: "1px solid #dee2e6",
+  zIndex: 9999,
+  height: "140px"
+}}>
+  {/* 여기에 광고 이미지나 문구, 링크 등을 삽입 */}
+  <p style={{ margin: 0, fontWeight: "bold", color: "#495057" }}>
+    🔥 하단 고정 광고 영역입니다 🔥
+  </p>
+</div>
+  </Col>
+</Row>
       </Container>
     </div>
+
+    
   );
 }
 
