@@ -17,6 +17,9 @@ import btimg from "/buttonimg.png";
 import "../App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+// 카메라 찰칵 효과음 URL
+const CAMERA_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2122/2122-preview.mp3";
+
 //text 색, 두께 수정
 const TextBox = styled.p`
   font-weight: 700;
@@ -29,6 +32,54 @@ const TextBox = styled.p`
   font-size: ${({ fontSize }) => fontSize - 30}px;
 `;
 
+// 카메라 플래시 효과를 위한 스타일 컴포넌트
+const FlashOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  opacity: ${props => props.active ? 0.8 : 0};
+  z-index: 999;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+`;
+
+// 미리보기 컴포넌트
+const PreviewOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+`;
+
+const PreviewContent = styled.div`
+  position: relative;
+  width: 90%;
+  max-width: 600px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const PreviewImage = styled.img`
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 5px;
+  margin-bottom: 15px;
+`;
 
 function App() {
   const navigate = useNavigate();
@@ -45,6 +96,12 @@ function App() {
   const [isTimerActive, setIsTimerActive] = useState(false); // 타이머 활성화 상태
   const [timerCount, setTimerCount] = useState(3); // 타이머 카운트다운 (3초)
   const [capturedImages, setCapturedImages] = useState([]); // 사진 배열을 직접 상태로 관리
+  const [flashActive, setFlashActive] = useState(false); // 플래시 효과 상태
+  const [showPreview, setShowPreview] = useState(false); // 미리보기 표시 상태
+  const [previewImage, setPreviewImage] = useState(null); // 미리보기 이미지
+
+  // 카메라 효과음 객체 생성
+  const cameraSound = new Audio(CAMERA_SOUND_URL);
 
   // 성별 정보 로드 - 원래 기능대로 localStorage 초기화 복원
   useEffect(() => {
@@ -156,13 +213,32 @@ function App() {
         // 타이머가 0이 되면 실제 촬영 수행
         if (prevCount <= 1) {
           clearInterval(timerInterval);
-          captureImage(); // 실제 캡처 함수 호출
-          setIsTimerActive(false);
+          
+          // 사진 촬영 효과
+          playShutterEffect();
+          
           return 3; // 타이머 초기화
         }
         return prevCount - 1;
       });
     }, 1000);
+  };
+
+  // 카메라 셔터 효과 재생
+  const playShutterEffect = () => {
+    // 플래시 효과 활성화
+    setFlashActive(true);
+    
+    // 카메라 소리 재생
+    cameraSound.play().catch(err => console.error("오디오 재생 오류:", err));
+    
+    // 실제 캡처 수행
+    captureImage();
+    
+    // 플래시 효과 비활성화 (200ms 후)
+    setTimeout(() => {
+      setFlashActive(false);
+    }, 200);
   };
 
   // 실제 이미지 캡처 로직
@@ -182,23 +258,33 @@ function App() {
     const imageDataUrl = canvas.toDataURL("image/png");
     setCapturedImage(imageDataUrl);
     
-    // 현재 상태에서 직접 이미지 배열을 업데이트
-    if (capturedImages.length < 4) {
-      // 상태 및 localStorage 모두 업데이트
-      const newImages = [...capturedImages, imageDataUrl];
-      setCapturedImages(newImages);
-      setPhotoCount(newImages.length);
+    // 미리보기 이미지 설정 및 표시
+    setPreviewImage(imageDataUrl);
+    setShowPreview(true);
+    
+    // 2초 후 미리보기 숨기고 다음 단계 진행
+    setTimeout(() => {
+      setShowPreview(false);
+      setIsTimerActive(false);
       
-      // localStorage 업데이트
-      localStorage.setItem('capturedImages', JSON.stringify(newImages));
-      
-      console.log(`이미지 저장 완료: ${newImages.length}/4장 저장됨`);
-      
-      // 4장을 모두 찍었으면 안내 메시지 표시
-      if (newImages.length === 4) {
-        setError('4장의 사진이 모두 촬영되었습니다. 타투 생성하기를 눌러주세요.');
+      // 현재 상태에서 직접 이미지 배열을 업데이트
+      if (capturedImages.length < 4) {
+        // 상태 및 localStorage 모두 업데이트
+        const newImages = [...capturedImages, imageDataUrl];
+        setCapturedImages(newImages);
+        setPhotoCount(newImages.length);
+        
+        // localStorage 업데이트
+        localStorage.setItem('capturedImages', JSON.stringify(newImages));
+        
+        console.log(`이미지 저장 완료: ${newImages.length}/4장 저장됨`);
+        
+        // 4장을 모두 찍었으면 안내 메시지 표시
+        if (newImages.length === 4) {
+          setError('4장의 사진이 모두 촬영되었습니다. 타투 생성하기를 눌러주세요.');
+        }
       }
-    }
+    }, 2000);
   };
 
   const handleDownload = () => {
@@ -248,6 +334,21 @@ function App() {
 
   return (
     <Container style={{ minHeight: "120vh" }}>
+      {/* 플래시 효과 오버레이 */}
+      <FlashOverlay active={flashActive} />
+      
+      {/* 미리보기 오버레이 */}
+      {showPreview && (
+        <PreviewOverlay>
+          <PreviewContent>
+            <PreviewImage src={previewImage} alt="촬영된 사진" />
+            <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
+              사진이 촬영되었습니다!
+            </div>
+          </PreviewContent>
+        </PreviewOverlay>
+      )}
+      
       <Row className="one">
         <div className="App">
           <img className="cloudimg" src={cloud} />
@@ -258,7 +359,7 @@ function App() {
           style={{ transform: "scaleX(-1)" }} // 좌우 반전 적용
         ></video>
         {/* 타이머 활성화 시 카운트다운 오버레이 표시 */}
-        {isTimerActive && (
+        {isTimerActive && !showPreview && (
           <div style={{
             position: 'absolute',
             top: '50%',
@@ -281,26 +382,27 @@ function App() {
           {/* 촬영 버튼 */}
           <button 
             onClick={handleCapture} 
-            disabled={isTimerActive || capturedImages.length >= 4}
+            disabled={isTimerActive || capturedImages.length >= 4 || showPreview}
             style={{ 
               padding: "10px 20px", 
               fontSize: "16px", 
               marginRight: "10px",
-              opacity: (isTimerActive || capturedImages.length >= 4) ? 0.6 : 1 
+              opacity: (isTimerActive || capturedImages.length >= 4 || showPreview) ? 0.6 : 1 
             }}
           >
             {isTimerActive ? `${timerCount}초 후 촬영` : 
+             showPreview ? '사진 처리 중...' :
              (capturedImages.length >= 4 ? '촬영 완료' : `촬영하기 (${capturedImages.length}/4)`)}
           </button>
 
           {/* 타투 생성 버튼 */}
           <button 
             onClick={sendImageToBackend}
-            disabled={loading || capturedImages.length < 4}
+            disabled={loading || capturedImages.length < 4 || isTimerActive || showPreview}
             style={{ 
               padding: "10px 20px", 
               fontSize: "16px", 
-              backgroundColor: loading || capturedImages.length < 4 ? "#ccc" : "#007bff", 
+              backgroundColor: loading || capturedImages.length < 4 || isTimerActive || showPreview ? "#ccc" : "#007bff", 
               color: "white",
               marginRight: "10px"
             }}
@@ -366,20 +468,6 @@ function App() {
             >
               <TextBox fontSize={fontSize}>{displayText}</TextBox>
             </div>
-
-            {/* 버튼 이미지 - 촬영하기 기능으로 변경 */}
-            {/* <img
-              className="button-img"
-              src={btimg}
-              onClick={isTimerActive || capturedImages.length >= 4 ? null : handleCapture}
-              style={{
-                width: "150px",
-                marginTop: "20px",
-                cursor: (isTimerActive || capturedImages.length >= 4) ? "default" : "pointer",
-                opacity: (isTimerActive || capturedImages.length >= 4) ? 0.6 : 1,
-              }}
-              alt="촬영 버튼"
-            /> */}
           </div>
         </Col>
         <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
