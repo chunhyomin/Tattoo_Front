@@ -9,6 +9,7 @@ import Picture from "./pages/Picture.jsx";
 import Result from "./pages/Result.jsx";
 import Loading from "./pages/Loading.jsx";
 import Loading_h from "./pages/Loading_h.jsx";
+import SharePage from "./pages/SharePage.jsx";
 import "./index.css";
 
 // 미디어 디바이스 폴리필 추가
@@ -36,6 +37,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="/Result" element={<Result />} />
         <Route path="/Loading" element={<Loading />} />
         <Route path="/Loading_h" element={<Loading_h />} />
+        <Route path="/share/:token" element={<SharePage />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

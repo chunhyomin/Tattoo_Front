@@ -6,6 +6,11 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   server: {
     port: 5173,
     host: true,
@@ -16,13 +21,20 @@ export default defineConfig({
     allowedHosts: ['aitattoo.r-e.kr', 'localhost', '.local'],
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
+        secure: false,
       },
-      '/health': {
-        target: 'http://localhost:5000',
+      '/share': {
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
-      }
+        secure: false,
+      },
+      '/shares': {
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true,
+        secure: false,
+      },
     }
   }
 })

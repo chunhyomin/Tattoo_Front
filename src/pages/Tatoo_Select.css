@@ -126,7 +126,7 @@
     max-width: 300px;
     background: white;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 12px;
+    padding: 15px;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -140,7 +140,7 @@
     display: grid;
     justify-items: center;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     width: 100%;
     height: 85%;
     overflow: hidden;
@@ -176,14 +176,6 @@
     display: block;
     }
 
-    .lettering-bottom {
-    width: 100%;
-    height: auto;
-    max-height: 15%;
-    object-fit: contain;
-    margin-top: 6px;
-    }
-
     @media (max-width: 768px) {
     .a5-box {
         max-width: 90%;
@@ -198,9 +190,9 @@
     }
 
     /* 말풍선 하단 중앙에 위치 */
-    .bubble4-container {
-    position: absolute;
-    left: 50%;
+    .bubble5-container {
+    /* position: absolute; */
+    /* left: 50%; */
     z-index: 1;
     }
 
@@ -239,19 +231,83 @@
     max-width: 420px;
     }
 
-    /* QR 코드 스타일 */
-    .qr-code-box {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    width: 80px;
-    height: 80px;
-    z-index: 5;
-    }
-
-    .qr-code-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: 4px;
+    /* 인쇄 스타일 */
+    @media print {
+        /* 인쇄 시 필요없는 요소들 숨기기 */
+        body * {
+            visibility: hidden;
+        }
+        
+        .a5-box, .a5-box * {
+            visibility: visible;
+        }
+        
+        .a5-box {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 148mm;
+            height: 210mm;
+            padding: 15mm;
+            margin: 0;
+            box-shadow: none;
+            filter: none;
+            background: white;
+            border: none;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+        }
+        
+        /* 타투 그리드 레이아웃 수정 */
+        .tattoo-grid {
+            display: grid;
+            grid-gap: 15mm;
+            height: 70%;
+            margin-bottom: 20mm;
+            background: white;
+        }
+        
+        /* 1,2,3,4개 이미지에 따른 적절한 그리드 레이아웃 */
+        .tattoo-grid.count-1 {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+        }
+        
+        .tattoo-grid.count-2 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr;
+        }
+        
+        .tattoo-grid.count-3, .tattoo-grid.count-4 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+        
+        /* 선택된 타투 이미지 크기 조정 */
+        .selected-tattoo {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        /* 레터링과 QR 코드 영역 인쇄 크기 조정 */
+        .a5-box > div:last-child {
+            width: 100%;
+            margin-top: 15mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 15%;
+        }
+        
+        /* 레터링 이미지 및 QR 코드 크기 조정 */
+        .a5-box > div:last-child img:first-child {
+            max-width: 80%;
+            height: auto;
+        }
+        
+        .a5-box > div:last-child img:last-child {
+            width: 20mm;
+            height: 20mm;
+        }
     }

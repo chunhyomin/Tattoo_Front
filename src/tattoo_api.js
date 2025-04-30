@@ -321,6 +321,105 @@ export function getImageUrl(imagePath) {
   }
 }
 
+/**
+ * 타투 공유 레코드 생성 함수
+ * @param {Object} shareData - 공유할 타투 데이터
+ * @returns {Promise<Object>} 생성된 공유 정보
+ */
+export const createShareRecord = async (shareData) => {
+  try {
+    console.log('공유 레코드 생성 요청 시작', shareData);
+    
+    // 현재 도메인 정보 추가
+    const currentDomain = window.location.origin;
+    const dataWithDomain = {
+      ...shareData,
+      base_url: currentDomain
+    };
+    
+    console.log('도메인 정보가 추가된 공유 데이터:', dataWithDomain);
+    
+    const response = await fetch(`${API_URL}/api/create-share`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify(dataWithDomain),
+      mode: 'cors',
+      cache: 'no-cache'
+    });
+    
+    console.log('API 응답 상태:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API 오류 (${response.status}):`, errorText);
+      throw new Error(`API 오류 (${response.status}): ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('공유 레코드 생성 결과:', result);
+    
+    // QR 코드 URL이 상대 경로인 경우 처리
+    if (result.qr_url && typeof result.qr_url === 'string') {
+      // 로그 추가
+      console.log('QR 코드 원본 URL:', result.qr_url);
+      
+      // getImageUrl 함수를 사용하여 전체 URL로 변환하지 않음
+      // qr_url은 이미 서버에서 처리된 경로이므로 그대로 사용
+      // 단, 상대 경로인 경우에만 API_URL을 추가
+      if (!result.qr_url.startsWith('http') && !result.qr_url.startsWith('/')) {
+        result.qr_url = `/api/images/${result.qr_url}`;
+      }
+      
+      console.log('QR 코드 처리된 URL:', result.qr_url);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('공유 레코드 생성 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 공유 토큰으로 타투 데이터 조회 함수
+ * @param {string} token - 공유 토큰
+ * @returns {Promise<Object>} 공유된 타투 데이터
+ */
+export const getSharedTattoo = async (token) => {
+  try {
+    console.log('공유 타투 데이터 조회 시작:', token);
+    
+    const response = await fetch(`${API_URL}/api/share/${token}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      mode: 'cors',
+      cache: 'no-cache'
+    });
+    
+    console.log('API 응답 상태:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API 오류 (${response.status}):`, errorText);
+      throw new Error(`API 오류 (${response.status}): ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('공유 타투 데이터 조회 결과:', result);
+    return result;
+  } catch (error) {
+    console.error('공유 데이터 조회 실패:', error);
+    throw error;
+  }
+};
+
 export default {
   generateTattoo,
   getTattooResult,
@@ -328,4 +427,6 @@ export default {
   getImageUrl,
   checkHealth,
   analyzeAnimal,
+  createShareRecord,
+  getSharedTattoo,
 }; 

@@ -2,7 +2,9 @@
     import { useState, useEffect, useRef } from "react";
     import styled from "styled-components";
     import { Container, Row, Col } from "react-bootstrap";
-    import { getImageUrl } from "../tattoo_api.js";
+    import { getImageUrl, createShareRecord } from "../tattoo_api.js";
+    import html2canvas from "html2canvas";
+    import jsPDF from "jspdf";
 
     import leaf from "/leaf.png";
     import cloud from "/cloud.png";
@@ -45,6 +47,17 @@
     const [latinInfo, setLatinInfo] = useState("");
     const [apiResponded, setApiResponded] = useState(false);
     const [qrCodeUrl, setQrCodeUrl] = useState("");
+    
+    // 공유 관련 상태 추가
+    const [isSharing, setIsSharing] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareInfo, setShareInfo] = useState(null);
+
+    // PDF 생성 중 로딩 상태
+    const [isPdfGenerating, setIsPdfGenerating] = useState(false);
+    
+    // A5 출력용 레이아웃 참조
+    const a5BoxRef = useRef(null);
 
     useEffect(() => {
         console.log("타투 결과 페이지 로드됨");
@@ -95,7 +108,66 @@
                     }
                 }
                 
-                // QR 코드 URL 설정
+                // 페이지 로드 시 자동으로 공유 레코드 생성 및 QR 코드 표시 (0.5초 후 실행)
+                setTimeout(async () => {
+                    try {
+                        // 현재 결과 데이터를 기반으로 공유 데이터 생성
+                        const shareData = {
+                            display_path: parsedResult.display_image,
+                            tattoo_paths: parsedResult.tattoo_images,
+                            lettering_path: parsedResult.lettering_image,
+                            style: parsedResult.style || 'simple'
+                        };
+                        
+                        console.log("자동 공유 데이터:", shareData);
+                        
+                        const shareResult = await createShareRecord(shareData);
+                        console.log("자동 공유 결과:", shareResult);
+                        
+                        if (shareResult.success) {
+                            // 로그에서 확인된 방식으로 완전한 QR 코드 URL
+                            let completeQrUrl = '';
+                            
+                            // 1. qr_filename이 있는 경우
+                            if (shareResult.qr_filename) {
+                                completeQrUrl = `/api/images/${shareResult.qr_filename}`;
+                                console.log("자동 QR 코드 URL (qr_filename):", completeQrUrl);
+                            }
+                            // 2. token이 있는 경우 URL 패턴에서 추출
+                            else if (shareResult.share_url) {
+                                const tokenMatch = shareResult.share_url.match(/\/share\/([^\/\?]+)/);
+                                if (tokenMatch && tokenMatch[1]) {
+                                    const token = tokenMatch[1];
+                                    completeQrUrl = `/api/images/${token}_qr.png`;
+                                    console.log("자동 QR 코드 URL (token):", completeQrUrl);
+                                }
+                            }
+                            // 3. qr_url이 직접 제공된 경우
+                            else if (shareResult.qr_url) {
+                                completeQrUrl = shareResult.qr_url;
+                                console.log("자동 QR 코드 URL (qr_url):", completeQrUrl);
+                            }
+                            
+                            // 공유 URL 및 QR 코드 정보 저장
+                            setShareInfo({
+                                shareUrl: shareResult.share_url,
+                                qrUrl: completeQrUrl,
+                                expiresAt: new Date(shareResult.expires_at * 1000)
+                            });
+                            
+                            // QR 코드 URL 설정
+                            if (completeQrUrl) {
+                                setQrCodeUrl(completeQrUrl);
+                                console.log("최종 자동 QR 코드 URL:", completeQrUrl);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('자동 타투 공유 오류:', error);
+                        // 오류 발생 시 조용히 실패 (사용자에게 알림 표시하지 않음)
+                    }
+                }, 10); // 0.5초에서 10ms로 변경 (최소한의 딜레이만 유지)
+                
+                // QR 코드 URL 설정 (기존 로직 유지)
                 if (parsedResult.qr_code_url) {
                     // qr_code_url이 직접 제공된 경우
                     const qrUrl = getImageUrl(parsedResult.qr_code_url);
@@ -113,6 +185,10 @@
                     const qrUrl = getImageUrl(qrPath);
                     setQrCodeUrl(qrUrl);
                     console.log("QR 코드 URL 설정 (id 기반):", qrUrl);
+                } else {
+                    // QR 코드 URL이 없는 경우 공유 데이터를 미리 생성
+                    console.log("QR 코드 URL이 없습니다. 자동으로 공유 데이터를 생성합니다.");
+                    // (여기는 위의 코드에서 처리함)
                 }
                 
                 // 이미지 처리
@@ -241,9 +317,133 @@
         }
     };
 
+    // 직접 인쇄 실행
+    const handlePrint = () => {
+        window.print();
+    };
+
     return (
         <div className="app4-background">
         <img src={cloud} className="cloud-bg position-absolute top-0 start-0 w-100" alt="배경" />
+
+        {/* 공유 모달 추가 */}
+        {showShareModal && shareInfo && (
+            <div 
+                className="share-modal"
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}
+                onClick={() => setShowShareModal(false)}
+            >
+                <div 
+                    className="modal-content"
+                    style={{
+                        backgroundColor: 'white',
+                        padding: '30px',
+                        borderRadius: '15px',
+                        width: '90%',
+                        maxWidth: '500px',
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
+                        position: 'relative',
+                        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button 
+                        className="close-btn"
+                        style={{
+                            position: 'absolute',
+                            top: '10px',
+                            right: '10px',
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '24px',
+                            cursor: 'pointer',
+                            color: '#555'
+                        }}
+                        onClick={() => setShowShareModal(false)}
+                    >
+                        &times;
+                    </button>
+                    <h3 style={{ textAlign: 'center' }}>타투 디자인 공유</h3>
+                    
+                    <img 
+                        src={getImageUrl(shareInfo.qrUrl)} 
+                        alt="QR 코드" 
+                        style={{
+                            display: 'block',
+                            margin: '20px auto',
+                            maxWidth: '200px',
+                            border: '1px solid #eee',
+                            padding: '10px'
+                        }}
+                        onError={(e) => {
+                            console.error("QR 코드 이미지 로드 오류:", e);
+                            e.target.onerror = null; // 무한 루프 방지
+                        }}
+                    />
+                    
+                    <p style={{ textAlign: 'center' }}>아래 링크를 통해 타투 디자인을 공유할 수 있습니다:</p>
+                    
+                    <div style={{
+                        margin: '20px 0',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}>
+                        <input 
+                            type="text" 
+                            value={shareInfo.shareUrl} 
+                            readOnly 
+                            onClick={(e) => e.target.select()}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                border: '1px solid #ddd',
+                                borderRadius: '4px',
+                                fontSize: '14px'
+                            }}
+                        />
+                        <button 
+                            onClick={() => {
+                                navigator.clipboard.writeText(shareInfo.shareUrl)
+                                    .then(() => alert('URL이 클립보드에 복사되었습니다.'))
+                                    .catch(err => console.error('URL 복사 실패:', err));
+                            }}
+                            style={{
+                                padding: '10px 15px',
+                                backgroundColor: '#3498db',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                marginLeft: '10px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            복사
+                        </button>
+                    </div>
+                    
+                    <p style={{
+                        color: '#777',
+                        fontSize: '14px',
+                        textAlign: 'center',
+                        marginTop: '15px'
+                    }}>
+                        이 링크는 {shareInfo.expiresAt.toLocaleString()}에 만료됩니다.
+                    </p>
+                </div>
+            </div>
+        )}
 
         <Container fluid className="text-center py-4">
             <div className="position-absolute top-0 end-0 p-3">
@@ -314,14 +514,15 @@
 
             {/* 오른쪽: 도안 미리보기 */}
             <Col xs={12} sm={12} md={4} className="d-flex justify-content-center">
-                <div className="image-card_2 a5-box" data-count={selectedTattoos.length}>
-                <div className={`tattoo-grid count-${selectedTattoos.length}`}>
+                <div className="image-card_2 a5-box" ref={a5BoxRef} data-count={selectedTattoos.length} style={{backgroundColor: 'white'}}>
+                <div className={`tattoo-grid count-${selectedTattoos.length}`} style={{backgroundColor: 'white'}}>
                     {selectedTattoos.map((tattoo, idx) => (
                     <img 
                         key={idx} 
                         src={tattoo} 
                         alt={`선택된 타투 ${idx + 1}`} 
                         className="selected-tattoo"
+                        style={{backgroundColor: 'white'}}
                         onError={(e) => {
                             console.error("선택된 타투 이미지 로드 오류:", e);
                             e.target.onerror = null; // 무한 루프 방지
@@ -330,31 +531,71 @@
                     />
                     ))}
                 </div>
-                {/* 레터링 이미지가 있으면 그것을 사용 */}
-                {letteringImage && (
-                    <img 
-                        src={letteringImage} 
-                        alt="레터링" 
-                        className="lettering-bottom"
-                        onError={(e) => {
-                            console.error("레터링 이미지 로드 오류:", e);
-                            e.target.onerror = null; // 무한 루프 방지
-                            e.target.style.display = 'none'; // 오류 발생 시 숨김 처리
-                        }}
-                    />
-                )}
-                
-                {/* QR 코드 표시 추가 - 디버깅 정보 포함 */}
-                {qrCodeUrl ? (
-                    <div className="qr-code-box">
+                {/* 레터링 이미지가 있으면 그것을 사용, QR 코드와 함께 표시 */}
+                <div style={{ 
+                    width: '100%', 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: '8px',
+                    backgroundColor: 'white'
+                }}>
+                    {/* 레터링 */}
+                    {letteringImage ? (
                         <img 
-                            src={qrCodeUrl} 
-                            alt="QR 코드" 
-                            className="qr-code-img"
+                            src={letteringImage} 
+                            alt="레터링" 
+                            style={{
+                                maxWidth: '80%',
+                                height: 'auto',
+                                objectFit: 'contain',
+                                backgroundColor: 'white'
+                            }}
+                            onError={(e) => {
+                                console.error("레터링 이미지 로드 오류:", e);
+                                e.target.onerror = null;
+                                e.target.style.display = 'none';
+                            }}
+                        />
+                    ) : (
+                        <div className="animal-name" style={{
+                            fontFamily: 'serif',
+                            fontSize: '22px',
+                            fontWeight: 'bold',
+                            fontStyle: 'italic',
+                            color: '#000',
+                            textAlign: 'left',
+                            backgroundColor: 'white'
+                        }}>
+                            {animalType ? `${animalType}` : 'Mus Musculus'}
+                        </div>
+                    )}
+                    
+                    {/* QR 코드 (간단하게 표시) */}
+                    {qrCodeUrl && (
+                        <img 
+                            src={qrCodeUrl}
+                            alt="QR 코드"
+                            className="qr-code"
+                            style={{
+                                width: '60px',
+                                height: '60px',
+                                objectFit: 'contain',
+                                border: '1px solid #ddd',
+                                backgroundColor: 'white'
+                            }}
                             onLoad={() => console.log("QR 코드 이미지 로드 성공:", qrCodeUrl)}
                             onError={(e) => {
                                 console.error("QR 코드 이미지 로드 오류:", qrCodeUrl, e);
                                 e.target.onerror = null;
+                                
+                                // QR 코드 로드 실패 시 모달의 QR 코드 URL 직접 시도
+                                if (shareInfo && shareInfo.qrUrl) {
+                                    const modalQrUrl = getImageUrl(shareInfo.qrUrl);
+                                    console.log("모달의 QR 코드 URL로 재시도:", modalQrUrl);
+                                    e.target.src = modalQrUrl;
+                                    return;
+                                }
                                 
                                 // 실패 시 대체 URL 시도
                                 if (resultData && resultData.id) {
@@ -377,41 +618,52 @@
                                 }
                             }}
                         />
-                    </div>
-                ) : (
-                    <div className="qr-code-box qr-empty">
-                        {/* QR 코드 URL이 없을 때 표시할 내용 */}
-                    </div>
-                )}
+                    )}
+                </div>
                 </div>
             </Col>
             </Row>
 
             {/* 하단: 말풍선 + 버튼 */}
-            <Row className="justify-content-center align-items-center mt-4 g-3">
-            <Col xs={12} sm={6} md={5} className="position-relative d-flex justify-content-center">
-                <div className="bubble4-container" ref={bubbleRef}>
-                <img src={bubble} alt="말풍선" className="bubble4-img" />
-                <div
-                className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                style={{ padding: "2rem" }}
-                >
-                    <TextBox fontSize={fontSize}>
-                    {displayText || getDisplayMessage()}
-                    </TextBox>
-                </div>
-                </div>
-            </Col>
+            <Row className="justify-content-end align-items-center mt-4">
+            <Col xs={6} sm={10} md={5} className="d-flex justify-content-center">
+                <div className="bubble5-container position-relative" ref={bubbleRef}>
+                    {/* 말풍선 이미지 */}
+                    <img src={bubble} alt="말풍선" className="bubble4-img" style={{ width: '100%', height: 'auto' }} />
 
-            {/* 버튼 영역 */}
-            <Col xs={6} sm={3} md={2} className="d-flex justify-content-center">
-                <div>
-                    <img src={minib1} alt="인쇄하기" className="btn-icon" onClick={() => window.print()} />
-                </div>
-                <div>
-                <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
-                </div>
-            </Col>
+                    {/* 텍스트를 말풍선 안에 딱 맞게 배치 */}
+                    <div
+                    className="position-absolute"
+                    style={{
+                        top: '12%', // 말풍선 디자인에 맞게 조절
+                        left: '10%',
+                        right: '10%',
+                        bottom: '15%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0.5rem',
+                        overflow: 'hidden',
+                        textAlign: 'center',
+                    }}
+                    >
+                            <TextBox fontSize={fontSize}>
+                            {displayText || getDisplayMessage()}
+                            </TextBox>
+                        </div>
+                    </div>
+                </Col>
+
+                {/* 버튼 영역 */}
+                <Col xs="auto" className="d-flex justify-content-center">
+                    <div>
+                        <img src={minib1} alt="인쇄하기" className="btn-icon" onClick={handlePrint} />
+                    </div>
+                    {/* 공유하기 버튼 제거 */}
+                    <div >
+                    <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
+                    </div>
+                </Col>
             </Row>
         </Container>
         </div>

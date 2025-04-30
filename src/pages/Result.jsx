@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { createShareRecord } from "../tattoo_api";
 
 import back from "/img_background.png";
 import ch1 from "/여울이.png";
@@ -206,21 +207,120 @@ const ConfirmButton = styled(ActionButton)`
   }
 `;
 
+// 공유 모달 컴포넌트 추가
+const ShareModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #555;
+  
+  &:hover {
+    color: #000;
+  }
+`;
+
+const QRCode = styled.img`
+  display: block;
+  margin: 20px auto;
+  max-width: 200px;
+  border: 1px solid #eee;
+  padding: 10px;
+`;
+
+const ShareURL = styled.div`
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+`;
+
+const URLInput = styled.input`
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+`;
+
+const CopyButton = styled.button`
+  padding: 10px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-left: 10px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #2980b9;
+  }
+`;
+
+const ExpiryNotice = styled.p`
+  color: #777;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 15px;
+`;
+
+const ShareButton = styled(ActionButton)`
+  background-color: #3498db;
+  color: white;
+  
+  &:hover {
+    background-color: #2980b9;
+  }
+`;
+
 const PrintSelection = () => {
   const navigate = useNavigate();
   const [tattooResults, setTattooResults] = useState([]);
   const [selectedTattoos, setSelectedTattoos] = useState([]);
   const [maxSelections, setMaxSelections] = useState(3);
   const [latinPhrase, setLatinPhrase] = useState("");
+  const [resultData, setResultData] = useState(null);
+  // 공유 관련 상태 추가
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareInfo, setShareInfo] = useState(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     // localStorage에서 타투 결과 데이터 가져오기
-    const resultData = localStorage.getItem("tattooResult");
+    const resultDataStr = localStorage.getItem("tattooResult");
     
-    if (resultData) {
+    if (resultDataStr) {
       try {
-        const parsed = JSON.parse(resultData);
+        const parsed = JSON.parse(resultDataStr);
         console.log("타투 결과 데이터:", parsed);
+        setResultData(parsed);
         
         // 타투 이미지 배열이 있는지 확인
         if (parsed.tattoo_images && Array.isArray(parsed.tattoo_images)) {
@@ -288,6 +388,57 @@ const PrintSelection = () => {
     }
   };
 
+  // 공유 기능 구현
+  const handleShare = async () => {
+    try {
+      setIsSharing(true);
+      
+      if (!resultData) {
+        throw new Error("공유할 타투 데이터가 없습니다");
+      }
+      
+      // 현재 결과 데이터를 기반으로 공유 데이터 생성
+      const shareData = {
+        display_path: resultData.display_image,
+        tattoo_paths: resultData.tattoo_images,
+        lettering_path: resultData.lettering_image,
+        style: resultData.style || 'simple'
+      };
+      
+      console.log("공유 데이터:", shareData);
+      
+      const shareResult = await createShareRecord(shareData);
+      
+      if (!shareResult.success) {
+        throw new Error(shareResult.error || "공유 레코드 생성에 실패했습니다");
+      }
+      
+      // 공유 URL 및 QR 코드 정보 표시
+      setShareInfo({
+        shareUrl: shareResult.share_url,
+        qrUrl: shareResult.qr_url,
+        expiresAt: new Date(shareResult.expires_at * 1000)
+      });
+      
+      // 공유 모달 표시
+      setShowShareModal(true);
+    } catch (error) {
+      console.error('타투 공유 오류:', error);
+      alert('타투 공유 중 오류가 발생했습니다: ' + error.message);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+  
+  // URL 복사 기능
+  const copyShareUrl = () => {
+    if (shareInfo && shareInfo.shareUrl) {
+      navigator.clipboard.writeText(shareInfo.shareUrl)
+        .then(() => alert('URL이 클립보드에 복사되었습니다.'))
+        .catch(err => console.error('URL 복사 실패:', err));
+    }
+  };
+
   return (
     <ResultBackground>
       <LeftCharacter src={ch1} alt="캐릭터1" />
@@ -344,6 +495,12 @@ const PrintSelection = () => {
           <BackButton onClick={handleBack}>
             이전으로
           </BackButton>
+          <ShareButton 
+            onClick={handleShare}
+            disabled={isSharing}
+          >
+            {isSharing ? '공유 중...' : '타투 공유'}
+          </ShareButton>
           <ConfirmButton 
             onClick={handleConfirm}
             disabled={selectedTattoos.length === 0}
@@ -352,6 +509,36 @@ const PrintSelection = () => {
           </ConfirmButton>
         </ActionButtons>
       </Cloud>
+      
+      {/* 공유 모달 */}
+      {showShareModal && shareInfo && (
+        <ShareModal onClick={() => setShowShareModal(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={() => setShowShareModal(false)}>&times;</CloseButton>
+            <h3 style={{ textAlign: 'center' }}>타투 디자인 공유</h3>
+            
+            <QRCode src={shareInfo.qrUrl} alt="QR 코드" />
+            
+            <p style={{ textAlign: 'center' }}>아래 링크를 통해 타투 디자인을 공유할 수 있습니다:</p>
+            
+            <ShareURL>
+              <URLInput 
+                type="text" 
+                value={shareInfo.shareUrl} 
+                readOnly 
+                onClick={(e) => e.target.select()}
+              />
+              <CopyButton onClick={copyShareUrl}>
+                복사
+              </CopyButton>
+            </ShareURL>
+            
+            <ExpiryNotice>
+              이 링크는 {shareInfo.expiresAt.toLocaleString()}에 만료됩니다.
+            </ExpiryNotice>
+          </ModalContent>
+        </ShareModal>
+      )}
     </ResultBackground>
   );
 };

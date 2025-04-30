@@ -380,25 +380,25 @@ function App() {
           </Col>
         </Row>
         <Row className="justify-content-center mt-5">
-  <Col xs={12}>
-  <div style={{
-  position: "fixed",
-  bottom: 0,
-  left: 0,
-  width: "100%",
-  backgroundColor: "#f1f3f5",
-  padding: "12px 0",
-  textAlign: "center",
-  borderTop: "1px solid #dee2e6",
-  zIndex: 9999,
-  height: "140px"
-}}>
-  {/* 여기에 광고 이미지나 문구, 링크 등을 삽입 */}
-  <p style={{ margin: 0, fontWeight: "bold", color: "#495057" }}>
-    🔥 하단 고정 광고 영역입니다 🔥
-  </p>
-</div>
-  </Col>
+        <Col xs={12}>
+          <div style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          width: "100%",
+          backgroundColor: "#f1f3f5",
+          padding: "12px 0",
+          textAlign: "center",
+          borderTop: "1px solid #dee2e6",
+          zIndex: 9999,
+          height: "140px"
+          }}>
+          {/* 여기에 광고 이미지나 문구, 링크 등을 삽입 */}
+            <p style={{ margin: 0, fontWeight: "bold", color: "#495057" }}>
+              🔥 하단 고정 광고 영역입니다 🔥
+            </p>
+          </div>
+        </Col>
 </Row>
       </Container>
     </div>
