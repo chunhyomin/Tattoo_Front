@@ -43,6 +43,8 @@
     const [animalTraits, setAnimalTraits] = useState([]);
     const [tattooImages, setTattooImages] = useState([]);
     const [letteringImage, setLetteringImage] = useState("");
+    const [processedLetteringImage, setProcessedLetteringImage] = useState("");
+    const [originalLetteringPath, setOriginalLetteringPath] = useState("");
     const [finalDisplayImage, setFinalDisplayImage] = useState("");
     const [latinInfo, setLatinInfo] = useState("");
     const [apiResponded, setApiResponded] = useState(false);
@@ -58,6 +60,9 @@
     
     // A5 출력용 레이아웃 참조
     const a5BoxRef = useRef(null);
+
+    // 상태 변수에 로딩 상태 추가
+    const [isLetteringProcessing, setIsLetteringProcessing] = useState(false);
 
     useEffect(() => {
         console.log("타투 결과 페이지 로드됨");
@@ -229,11 +234,17 @@
                     if (parsedResult.lettering_image) {
                         const letteringUrl = getImageUrl(parsedResult.lettering_image);
                         setLetteringImage(letteringUrl);
+                        setOriginalLetteringPath(parsedResult.lettering_image);
                         console.log("레터링 이미지 설정:", letteringUrl);
+                        
+                        // 레터링 후처리 API 호출은 별도로 처리
                     } else if (parsedResult.letteringImage) {
                         const letteringUrl = getImageUrl(parsedResult.letteringImage);
                         setLetteringImage(letteringUrl);
+                        setOriginalLetteringPath(parsedResult.letteringImage);
                         console.log("레터링 이미지 설정:", letteringUrl);
+                        
+                        // 레터링 후처리 API 호출은 별도로 처리
                     }
                     
                     // 최종 디스플레이 이미지 처리
@@ -321,6 +332,165 @@
     const handlePrint = () => {
         window.print();
     };
+
+    // useEffect 추가 - 레터링 이미지 경로가 설정되면 후처리 API 호출
+    useEffect(() => {
+        // 레터링 이미지 경로가 있고 현재 처리 중이 아닐 때만 실행
+        if (originalLetteringPath && !isLetteringProcessing && !processedLetteringImage) {
+            console.log("레터링 이미지 후처리 시작:", originalLetteringPath);
+            processLetteringImage(originalLetteringPath);
+        }
+    }, [originalLetteringPath, isLetteringProcessing, processedLetteringImage]);
+
+    // processLetteringImage 함수 수정
+    const processLetteringImage = async (imagePath) => {
+        if (!imagePath) {
+            console.error("유효한 레터링 이미지 경로가 없습니다.");
+            return;
+        }
+        
+        try {
+            // 처리 시작 시 로딩 상태 설정
+            setIsLetteringProcessing(true);
+            console.log("레터링 후처리 API 호출 원본 경로:", imagePath);
+            
+            // 이미지 경로에서 UUID와 파일명만 추출
+            let apiImagePath = imagePath;
+            
+            // 정규식으로 UUID-파일명 패턴 추출
+            const uuidPattern = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\/[^\/]+)$/i;
+            const match = imagePath.match(uuidPattern);
+            
+            if (match && match[1]) {
+                apiImagePath = match[1];
+                console.log("추출된 UUID 경로:", apiImagePath);
+            } else {
+                // 다른 방식으로 시도 - 마지막 두 부분만 추출
+                const parts = imagePath.split('/');
+                if (parts.length >= 2) {
+                    apiImagePath = `${parts[parts.length-2]}/${parts[parts.length-1]}`;
+                    console.log("대체 추출 경로:", apiImagePath);
+                }
+            }
+            
+            // 확장자가 있는지 확인하고 필요시 추가
+            if (!apiImagePath.endsWith('.png') && !apiImagePath.endsWith('.jpg') && !apiImagePath.endsWith('.jpeg')) {
+                apiImagePath += '.png';
+                console.log("확장자 추가된 경로:", apiImagePath);
+            }
+            
+            console.log("API에 전달할 최종 이미지 경로:", apiImagePath);
+            
+            const response = await fetch('/api/post-process-lettering', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image_path: apiImagePath,
+                    options: {
+                        padding: 10
+                    }
+                }),
+            });
+            
+            const data = await response.json();
+            console.log("레터링 후처리 API 응답:", data);
+            
+            if (data.success) {
+                console.log("레터링 후처리 성공:", data);
+                // 결과 이미지 경로 확인
+                console.log("처리된 이미지 경로:", data.processed_image);
+                
+                // 크롭된 레터링 이미지 URL 설정
+                const processedUrl = getImageUrl(data.processed_image);
+                console.log("최종 이미지 URL:", processedUrl);
+                
+                // 상태 업데이트
+                setProcessedLetteringImage(processedUrl);
+                
+                // 이미지 로드 여부 확인
+                const img = new Image();
+                img.onload = () => console.log("크롭된 이미지 로드 성공!");
+                img.onerror = (e) => console.error("크롭된 이미지 로드 실패:", e);
+                img.src = processedUrl;
+            } else {
+                console.error("레터링 후처리 실패:", data.error);
+                
+                // 원본 이미지 관련 로깅
+                console.log("원본 레터링 이미지 경로:", originalLetteringPath);
+                console.log("원본 레터링 이미지 URL:", letteringImage);
+            }
+        } catch (error) {
+            console.error("레터링 후처리 API 호출 오류:", error);
+        } finally {
+            // 처리 완료 시 로딩 상태 해제
+            setIsLetteringProcessing(false);
+        }
+    };
+
+    // 이미지 URL 수동 테스트 함수 개선
+    const testLetteringImageUrl = () => {
+        if (originalLetteringPath) {
+            // 이미지 경로에서 필요한 부분만 추출
+            const parts = originalLetteringPath.split('/');
+            let baseName = parts[parts.length-1].split('.')[0];
+            let folderName = "";
+            
+            // 폴더 이름 추출 (UUID 형식인 경우)
+            if (parts.length >= 2) {
+                const uuidPattern = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i;
+                if (uuidPattern.test(parts[parts.length-2])) {
+                    folderName = parts[parts.length-2] + "/";
+                }
+            }
+            
+            // 여러 가능한 경로 패턴 시도
+            const possiblePaths = [
+                `${folderName}${baseName}_lettering_processed.png`,
+                `${baseName}_lettering_processed.png`,
+                `${originalLetteringPath.split('.')[0]}_lettering_processed.png`
+            ];
+            
+            console.log("가능한 경로 패턴들:", possiblePaths);
+            
+            // 첫 번째 패턴 시도
+            const testPath = possiblePaths[0];
+            console.log("테스트 경로:", testPath);
+            
+            // URL 생성
+            const testUrl = getImageUrl(testPath);
+            console.log("테스트 URL:", testUrl);
+            
+            // 테스트 URL 설정
+            setProcessedLetteringImage(testUrl);
+            
+            // 이미지 로드 테스트
+            const img = new Image();
+            img.onload = () => console.log("테스트 이미지 로드 성공!");
+            img.onerror = (e) => {
+                console.error("첫 번째 테스트 이미지 로드 실패, 두 번째 패턴 시도:", e);
+                const secondTestUrl = getImageUrl(possiblePaths[1]);
+                setProcessedLetteringImage(secondTestUrl);
+            };
+            img.src = testUrl;
+        }
+    };
+
+    // 페이지 로드 후 5초 후에 URL 테스트 실행 (디버깅용)
+    useEffect(() => {
+        if (originalLetteringPath && !processedLetteringImage) {
+            const timer = setTimeout(() => {
+                console.log("5초 후 URL 테스트 실행");
+                if (!processedLetteringImage) {
+                    console.log("처리된 이미지가 없어 수동 테스트 실행");
+                    testLetteringImageUrl();
+                }
+            }, 5000);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [originalLetteringPath, processedLetteringImage]);
 
     return (
         <div className="app4-background">
@@ -532,18 +702,34 @@
                     ))}
                 </div>
                 {/* 레터링 이미지가 있으면 그것을 사용, QR 코드와 함께 표시 */}
-                <div style={{ 
-                    width: '100%', 
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '8px',
-                    backgroundColor: 'white'
-                }}>
+                <div className="image-card-bottom"
+                      style={{
+                        display: 'flex'
+                      }}>
                     {/* 레터링 */}
-                    {letteringImage ? (
+                    {isLetteringProcessing ? (
+                        // 처리 중일 때 로딩 표시
+                        <div style={{
+                            maxWidth: '80%',
+                            height: '60px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: 'white'
+                        }}>
+                            <div style={{
+                                width: '100px',
+                                textAlign: 'center',
+                                fontSize: '14px',
+                                color: '#666'
+                            }}>
+                                레터링 처리 중...
+                            </div>
+                        </div>
+                    ) : processedLetteringImage ? (
+                        // 크롭된 레터링 이미지 표시
                         <img 
-                            src={letteringImage} 
+                            src={processedLetteringImage} 
                             alt="레터링" 
                             style={{
                                 maxWidth: '80%',
@@ -552,13 +738,15 @@
                                 backgroundColor: 'white'
                             }}
                             onError={(e) => {
-                                console.error("레터링 이미지 로드 오류:", e);
+                                console.error("크롭된 레터링 이미지 로드 오류:", e);
                                 e.target.onerror = null;
                                 e.target.style.display = 'none';
                             }}
                         />
                     ) : (
+                        // 동물 이름 표시 (처리된 레터링 이미지가 없을 경우)
                         <div className="animal-name" style={{
+                            maxHeight: '40px',
                             fontFamily: 'serif',
                             fontSize: '22px',
                             fontWeight: 'bold',
@@ -647,9 +835,7 @@
                         textAlign: 'center',
                     }}
                     >
-                            <TextBox fontSize={fontSize}>
-                            {displayText || getDisplayMessage()}
-                            </TextBox>
+                <TextBox fontSize={fontSize}>{displayText}</TextBox>
                         </div>
                     </div>
                 </Col>
