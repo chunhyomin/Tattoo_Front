@@ -44,6 +44,7 @@
     const [finalDisplayImage, setFinalDisplayImage] = useState("");
     const [latinInfo, setLatinInfo] = useState("");
     const [apiResponded, setApiResponded] = useState(false);
+    const [qrCodeUrl, setQrCodeUrl] = useState("");
 
     useEffect(() => {
         console.log("타투 결과 페이지 로드됨");
@@ -90,8 +91,28 @@
                     // 라틴어 정보에서 첫 줄만 추출하여 설명에 추가
                     const firstLine = parsedResult.latin_info.split('\n')[0].trim();
                     if (firstLine && !animalDescription) {
-                        setAnimalDescription(`당신과 닮은 동물은 ${animalType || ''}입니다. 라틴어로 "${firstLine}"`);
+                        setAnimalDescription(` ${firstLine} \n\n 자세한 해석은 QR코드 참고해주세요!`);
                     }
+                }
+                
+                // QR 코드 URL 설정
+                if (parsedResult.qr_code_url) {
+                    // qr_code_url이 직접 제공된 경우
+                    const qrUrl = getImageUrl(parsedResult.qr_code_url);
+                    setQrCodeUrl(qrUrl);
+                    console.log("QR 코드 URL 설정 (직접):", qrUrl);
+                } else if (parsedResult.share_id) {
+                    // share_id가 있는 경우
+                    const qrPath = `shares/${parsedResult.share_id}_qr.png`;
+                    const qrUrl = getImageUrl(qrPath);
+                    setQrCodeUrl(qrUrl);
+                    console.log("QR 코드 URL 설정 (share_id 기반):", qrUrl);
+                } else if (parsedResult.id) {
+                    // id만 있는 경우
+                    const qrPath = `shares/${parsedResult.id}_qr.png`;
+                    const qrUrl = getImageUrl(qrPath);
+                    setQrCodeUrl(qrUrl);
+                    console.log("QR 코드 URL 설정 (id 기반):", qrUrl);
                 }
                 
                 // 이미지 처리
@@ -322,6 +343,46 @@
                         }}
                     />
                 )}
+                
+                {/* QR 코드 표시 추가 - 디버깅 정보 포함 */}
+                {qrCodeUrl ? (
+                    <div className="qr-code-box">
+                        <img 
+                            src={qrCodeUrl} 
+                            alt="QR 코드" 
+                            className="qr-code-img"
+                            onLoad={() => console.log("QR 코드 이미지 로드 성공:", qrCodeUrl)}
+                            onError={(e) => {
+                                console.error("QR 코드 이미지 로드 오류:", qrCodeUrl, e);
+                                e.target.onerror = null;
+                                
+                                // 실패 시 대체 URL 시도
+                                if (resultData && resultData.id) {
+                                    // 다른 경로 패턴 시도
+                                    const alternativePatterns = [
+                                        `shares/${resultData.id}_qr.png`,
+                                        `qr_${resultData.id}.png`,
+                                        `qr_codes/${resultData.id}.png`
+                                    ];
+                                    
+                                    // 현재 시도한 URL이 아닌 다른 패턴 선택
+                                    const fallbackUrl = getImageUrl(
+                                        alternativePatterns.find(p => !qrCodeUrl.includes(p)) || alternativePatterns[0]
+                                    );
+                                    
+                                    console.log("QR 코드 대체 URL 시도:", fallbackUrl);
+                                    e.target.src = fallbackUrl;
+                                } else {
+                                    e.target.style.display = 'none';
+                                }
+                            }}
+                        />
+                    </div>
+                ) : (
+                    <div className="qr-code-box qr-empty">
+                        {/* QR 코드 URL이 없을 때 표시할 내용 */}
+                    </div>
+                )}
                 </div>
             </Col>
             </Row>
@@ -331,7 +392,10 @@
             <Col xs={12} sm={6} md={5} className="position-relative d-flex justify-content-center">
                 <div className="bubble4-container" ref={bubbleRef}>
                 <img src={bubble} alt="말풍선" className="bubble4-img" />
-                <div className="bubble4-text">
+                <div
+                className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                style={{ padding: "2rem" }}
+                >
                     <TextBox fontSize={fontSize}>
                     {displayText || getDisplayMessage()}
                     </TextBox>
@@ -341,8 +405,12 @@
 
             {/* 버튼 영역 */}
             <Col xs={6} sm={3} md={2} className="d-flex justify-content-center">
-                <img src={minib1} alt="인쇄하기" className="btn-icon" onClick={() => window.print()} />
+                <div>
+                    <img src={minib1} alt="인쇄하기" className="btn-icon" onClick={() => window.print()} />
+                </div>
+                <div>
                 <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
+                </div>
             </Col>
             </Row>
         </Container>
