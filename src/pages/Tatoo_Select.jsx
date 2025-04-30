@@ -705,12 +705,14 @@
                 <div className="image-card-bottom"
                       style={{
                         display: 'flex'
+
                       }}>
                     {/* 레터링 */}
                     {isLetteringProcessing ? (
                         // 처리 중일 때 로딩 표시
                         <div style={{
                             maxWidth: '80%',
+                            maxHeight: "40px",
                             height: '60px',
                             display: 'flex',
                             alignItems: 'center',
@@ -733,7 +735,7 @@
                             alt="레터링" 
                             style={{
                                 maxWidth: '80%',
-                                height: 'auto',
+                                maxHeight: "80px",
                                 objectFit: 'contain',
                                 backgroundColor: 'white'
                             }}
@@ -813,35 +815,33 @@
             </Row>
 
             {/* 하단: 말풍선 + 버튼 */}
-            <Row className="justify-content-end align-items-center mt-4">
-            <Col xs={6} sm={10} md={5} className="d-flex justify-content-center">
-                <div className="bubble5-container position-relative" ref={bubbleRef}>
-                    {/* 말풍선 이미지 */}
-                    <img src={bubble} alt="말풍선" className="bubble4-img" style={{ width: '100%', height: 'auto' }} />
-
-                    {/* 텍스트를 말풍선 안에 딱 맞게 배치 */}
-                    <div
-                    className="position-absolute"
-                    style={{
-                        top: '12%', // 말풍선 디자인에 맞게 조절
-                        left: '10%',
-                        right: '10%',
-                        bottom: '15%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '0.5rem',
-                        overflow: 'hidden',
-                        textAlign: 'center',
-                    }}
-                    >
-                <TextBox fontSize={fontSize}>{displayText}</TextBox>
-                        </div>
+            <Row className="justify-content-center align-items-center mt-4">
+  <Col xs={4} sm={12} md={8} className="d-flex justify-content-center align-items-center">
+    <div className="bubble5-container position-relative" ref={bubbleRef}>
+      <img src={bubble} alt="말풍선" className="bubble4-img" style={{ width: '100%', height: 'auto' }} />
+                        {/* 텍스트를 말풍선 안에 딱 맞게 배치 */}
+                        <div
+                        className="position-absolute"
+                        style={{
+                            top: '12%', // 말풍선 디자인에 맞게 조절
+                            left: '10%',
+                            right: '10%',
+                            bottom: '15%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '0.5rem',
+                            overflow: 'hidden',
+                            textAlign: 'center',
+                        }}
+                        >
+                        <TextBox fontSize={fontSize}>{displayText}</TextBox>
+                            </div>
                     </div>
                 </Col>
 
                 {/* 버튼 영역 */}
-                <Col xs="auto" className="d-flex justify-content-center">
+                <Col xs="auto" md="auto"className="d-flex justify-content-center">
                     <div>
                         <img src={minib1} alt="인쇄하기" className="btn-icon" onClick={handlePrint} />
                     </div>

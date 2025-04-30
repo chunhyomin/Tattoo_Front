@@ -83,7 +83,7 @@ const PreviewImage = styled.img`
 
 function App() {
   const navigate = useNavigate();
-  const text = "카메라를 통해 자신의 모습을 4장 촬영해주세요. 촬영 후 타투 생성하기를 눌러주세요.";
+  const text = "카메라를 통해 자신의 모습을 2장 촬영해주세요. 촬영 후 타투 생성하기를 눌러주세요.";
   const [displayText, setDisplayText] = useState("");
   const [loop, setLoop] = useState(0);
   const [fontSize, setFontSize] = useState(1);
@@ -197,9 +197,9 @@ function App() {
     // 이미 타이머가 활성화된 상태면 리턴
     if (isTimerActive) return;
     
-    // 이미 4장이 다 찍혔으면 리턴
-    if (capturedImages.length >= 4) {
-      setError('이미 4장을 모두 촬영했습니다. 타투 생성하기를 눌러주세요.');
+    // 이미 2장이 다 찍혔으면 리턴
+    if (capturedImages.length >= 2) {
+      setError('이미 2장을 모두 촬영했습니다. 타투 생성하기를 눌러주세요.');
       return;
     }
     
@@ -268,7 +268,7 @@ function App() {
       setIsTimerActive(false);
       
       // 현재 상태에서 직접 이미지 배열을 업데이트
-      if (capturedImages.length < 4) {
+      if (capturedImages.length < 2) {
         // 상태 및 localStorage 모두 업데이트
         const newImages = [...capturedImages, imageDataUrl];
         setCapturedImages(newImages);
@@ -277,11 +277,11 @@ function App() {
         // localStorage 업데이트
         localStorage.setItem('capturedImages', JSON.stringify(newImages));
         
-        console.log(`이미지 저장 완료: ${newImages.length}/4장 저장됨`);
+        console.log(`이미지 저장 완료: ${newImages.length}/2장 저장됨`);
         
-        // 4장을 모두 찍었으면 안내 메시지 표시
-        if (newImages.length === 4) {
-          setError('4장의 사진이 모두 촬영되었습니다. 타투 생성하기를 눌러주세요.');
+        // 2장을 모두 찍었으면 안내 메시지 표시
+        if (newImages.length === 2) {
+          setError('2장의 사진이 모두 촬영되었습니다. 타투 생성하기를 눌러주세요.');
         }
       }
     }, 2000);
@@ -298,7 +298,7 @@ function App() {
 
   // 이미지 전송 함수
   const sendImageToBackend = async () => {
-    if (capturedImages.length === 4) { // 정확히 4장인 경우에만 다음 단계로 진행
+    if (capturedImages.length === 2) { // 정확히 2장인 경우에만 다음 단계로 진행
       try {
         setLoading(true);
         setError(null);
@@ -323,7 +323,7 @@ function App() {
         setError('이미지 저장 중 오류가 발생했습니다.');
       }
     } else {
-      setError('4장의 사진을 모두 촬영해주세요. 현재 ' + capturedImages.length + '장이 촬영되었습니다.');
+      setError('2장의 사진을 모두 촬영해주세요. 현재 ' + capturedImages.length + '장이 촬영되었습니다.');
     }
   };
 
@@ -382,27 +382,27 @@ function App() {
           {/* 촬영 버튼 */}
           <button 
             onClick={handleCapture} 
-            disabled={isTimerActive || capturedImages.length >= 4 || showPreview}
+            disabled={isTimerActive || capturedImages.length >= 2 || showPreview}
             style={{ 
               padding: "10px 20px", 
               fontSize: "16px", 
               marginRight: "10px",
-              opacity: (isTimerActive || capturedImages.length >= 4 || showPreview) ? 0.6 : 1 
+              opacity: (isTimerActive || capturedImages.length >= 2 || showPreview) ? 0.6 : 1 
             }}
           >
             {isTimerActive ? `${timerCount}초 후 촬영` : 
              showPreview ? '사진 처리 중...' :
-             (capturedImages.length >= 4 ? '촬영 완료' : `촬영하기 (${capturedImages.length}/4)`)}
+             (capturedImages.length >= 2 ? '촬영 완료' : `촬영하기 (${capturedImages.length}/2)`)}
           </button>
 
           {/* 타투 생성 버튼 */}
           <button 
             onClick={sendImageToBackend}
-            disabled={loading || capturedImages.length < 4 || isTimerActive || showPreview}
+            disabled={loading || capturedImages.length < 2 || isTimerActive || showPreview}
             style={{ 
               padding: "10px 20px", 
               fontSize: "16px", 
-              backgroundColor: loading || capturedImages.length < 4 || isTimerActive || showPreview ? "#ccc" : "#007bff", 
+              backgroundColor: loading || capturedImages.length < 2 || isTimerActive || showPreview ? "#ccc" : "#007bff", 
               color: "white",
               marginRight: "10px"
             }}
@@ -425,7 +425,7 @@ function App() {
           
           {/* 촬영된 사진 개수 표시 */}
           <div style={{ marginTop: "10px", fontSize: "14px", fontWeight: "bold" }}>
-            촬영된 사진: {capturedImages.length}장 / 최대 4장
+            촬영된 사진: {capturedImages.length}장 / 최대 2장
           </div>
           
           {/* 선택된 성별 정보 표시 */}

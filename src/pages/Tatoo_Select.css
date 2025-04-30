@@ -192,7 +192,7 @@
     /* 말풍선 하단 중앙에 위치 */
     .bubble5-container {
     /* position: absolute; */
-    /* left: 50%; */
+    left: 15%; 
     z-index: 1;
     }
 

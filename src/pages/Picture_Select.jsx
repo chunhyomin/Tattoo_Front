@@ -142,7 +142,7 @@ function App() {
         </div>
 
         <div className="picture-row mt-5">
-          {capturedImages.map((pic, index) => (
+          {capturedImages.slice(0, 2).map((pic, index) => (
             <div key={index}>
               <img
                 src={pic}

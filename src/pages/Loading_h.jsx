@@ -289,7 +289,10 @@ function App() {
 
   return (
     
-    <div className="app2-background">
+    <div className="app2-background" 
+    style={{
+      background: '#000'
+    }}>
       <img src={d_cloud} className="cloud-bg" alt="배경" />
 
       <Container fluid className="text-center">
@@ -306,7 +309,7 @@ function App() {
         <Row className="character-row justify-content-center align-items-center">
           <Col xs={14} sm={8} md={8}>
             <div
-              className="d_bubble-container position-relative d-flex justify-content-center align-items-center"
+              className="d_bubble-container position-relative d-flex justify-content-center align-items-center mt-5"
               ref={bubbleRef}
             >
               <img src={d_bubble} alt="말풍선" className="bubble-img w-100" />
@@ -350,11 +353,34 @@ function App() {
                     </div>
                   </div>
                 ) : (
-                  <div>
-                    <TextBox fontSize={fontSize}>
-                      {displayText || getCurrentLoadingMessage()}
-                    </TextBox>
-                  </div>
+<div
+  className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+  style={{ padding: "2rem" }}
+>
+  <div
+    style={{
+      width: '100%',
+      height: '100%',
+      padding: '1rem',
+      overflowY: 'auto',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+    }}
+  >
+    <TextBox
+      fontSize={fontSize}
+      style={{
+        width: '100%',
+        wordBreak: 'break-word',
+        lineHeight: '1.4',
+      }}
+    >
+      {displayText}
+    </TextBox>
+  </div>
+</div>
                 )}
               </div>
             </div>
@@ -362,7 +388,7 @@ function App() {
         </Row>
         
         
-        <Row className="justify-content-end align-items-center mt-4">
+        <Row className="justify-content-end align-items-center mt-5">
           <Col xs={6} sm={12} md={10}>
             <ProgressBar 
               now={progress} 
