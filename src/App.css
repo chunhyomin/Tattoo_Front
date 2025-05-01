@@ -1,3 +1,11 @@
+.app1-background {
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(to bottom, #8688ff, #26b7ff); /* 배경색 위에서 아래로 그라데이션 */
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
 /* 로고 스타일 */
 .logoimg {
   width: 30%;
@@ -117,14 +125,6 @@
   font-weight: bold;
   color: black;
 }
-.app1-background {
-  width: 100%;
-  height: 100vh;
-  background: linear-gradient(to bottom, #8688ff, #76ceff); /* 배경색 위에서 아래로 그라데이션 */
-  position: relative;
-  overflow: hidden;
-  z-index: 0;
-}
 
 .cloud-bg {
   position: absolute;
@@ -197,26 +197,6 @@
   height: auto; /* 비율 유지 */
   position: relative;
   z-index: 2; /* 이미지들이 다른 요소 위에 오도록 설정 */
-}
-
-.ch1img {
-  /* position: absolute; */
-  bottom: 40px; /* 아래에서 40px 띄움 */
-  left: 40px; /* 왼쪽에서 40px 띄움 */
-  width: 30%; /* 너비를 30%로 설정 */
-  max-width: 250px; /* 최대 너비 설정 */
-  height: auto; /* 비율 유지 */
-  z-index: 10; /* 다른 요소들보다 앞에 배치 */
-}
-
-.ch2img {
-  /* position: absolute; */
-  bottom: 40px; /* 아래에서 40px 띄움 */
-  right: 40px; /* 오른쪽에서 40px 띄움 */
-  width: 30%; /* 너비를 30%로 설정 */
-  max-width: 500px; /* 최대 너비 설정 */
-  height: auto; /* 비율 유지 */
-  z-index: 10; /* 다른 요소들보다 앞에 배치 */
 }
 
 .bubbleimg {
@@ -298,10 +278,8 @@ div p {
 
 .char-img {
   position: relative;
-  width: 100%;
-  max-width: 900px;
-  height: auto;
-  /* transform: translateY(200px); */
+  width: 150%;
+  transform: translateY(100px);
   z-index: 3;
   filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
   cursor: default;

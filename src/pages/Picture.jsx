@@ -14,6 +14,7 @@ import cloud from "/cloud.png";
 import bubble from "/말풍선.png";
 import btimg from "/buttonimg.png";
 
+import "./Picture.css";
 import "../App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -333,6 +334,7 @@ function App() {
   };
 
   return (
+    <div className="app5-background">
     <Container className="mt-4">
       {/* 플래시 효과 오버레이 */}
       <FlashOverlay active={flashActive} />
@@ -475,6 +477,7 @@ function App() {
         </Col>
       </Row>
     </Container>
+    </div>
   );
 }
 

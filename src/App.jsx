@@ -84,8 +84,8 @@ function App() {
           </Col>
         </Row>
 
-        <Row className="character-row justify-content-center align-items-center">
-          <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+        <Row className="character-row justify-content-center align-items-center g-5">
+          <Col xs={4} sm={3} md={2} className="d-flex justify-content-end">
             <img src={ch1} alt="캐릭터1" className="char-img" />
           </Col>
 
@@ -109,7 +109,8 @@ function App() {
               />
             </div>
           </Col>
-          <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+
+          <Col xs={4} sm={3} md={2} className="d-flex justify-content-start">
             <img src={ch2} alt="캐릭터2" className="char-img" />
           </Col>
         </Row>
