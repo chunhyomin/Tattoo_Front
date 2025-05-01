@@ -29,7 +29,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
+        <Route path="/App" element={<App />} />
         <Route path="/Gender_Select" element={<Gender_Select />} />
         <Route path="/Picture_Select" element={<Picture_Select />} />
         <Route path="/Tatoo_Select" element={<Tatoo_Select />} />

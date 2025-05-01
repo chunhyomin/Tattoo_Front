@@ -10,6 +10,7 @@
     import cloud from "/cloud.png";
     import minib1 from "/minibutton1.png";
     import minib2 from "/minibutton2.png";
+    import minib3 from "/minibutton3.png";
     import bubble from "/말풍선.png";
 
     import "bootstrap/dist/css/bootstrap.min.css";
@@ -274,12 +275,23 @@
         if (savedPicture) setSelectedPicture(savedPicture);
     }, []);
 
+    // 타투 이미지 선택 처리 함수 수정
     const handleTatooClick = (imgSrc) => {
+        // 이미 선택된 타투를 클릭한 경우 - 선택 해제 대신 중복 선택 허용
         if (selectedTattoos.includes(imgSrc)) {
-            setSelectedTattoos(selectedTattoos.filter((item) => item !== imgSrc));
+            // 최대 4개까지만 추가 가능
+            if (selectedTattoos.length < 4) {
+                setSelectedTattoos([...selectedTattoos, imgSrc]);
+            }
         } else if (selectedTattoos.length < 4) {
+            // 새로운 타투 선택
             setSelectedTattoos([...selectedTattoos, imgSrc]);
         }
+    };
+
+    // A5 박스 내 타투 클릭 시 선택 취소 함수 추가
+    const handleSelectedTattooClick = (imgSrc) => {
+        setSelectedTattoos(selectedTattoos.filter((item) => item !== imgSrc));
     };
 
     useEffect(() => {
@@ -839,7 +851,8 @@
                         src={tattoo} 
                         alt={`선택된 타투 ${idx + 1}`} 
                         className="selected-tattoo"
-                        style={{backgroundColor: 'white'}}
+                        style={{backgroundColor: 'white', cursor: 'pointer'}}
+                        onClick={() => handleSelectedTattooClick(tattoo)}
                         onError={(e) => {
                             console.error("선택된 타투 이미지 로드 오류:", e);
                             e.target.onerror = null; // 무한 루프 방지
@@ -1017,7 +1030,10 @@
                     </div>
                     {/* 돌아가기 버튼 */}
                     <div >
-                    <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
+                        <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
+                    </div>
+                    <div>
+                        <img src={minib3} alt="home" className="btn-icon" onClick={() => navigate("/App")}/>
                     </div>
                 </Col>
             </Row>
