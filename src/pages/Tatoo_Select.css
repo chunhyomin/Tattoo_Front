@@ -115,7 +115,7 @@
 
     /* 선택된 타투 강조 효과 */
     .tattoo-img.selected {
-    box-shadow: 0 0 17px 6px rgb(90, 178, 174);
+        filter: drop-shadow(0 0 10px rgb(138, 51, 179));
     z-index: 1;
     }
 
@@ -186,7 +186,6 @@
     max-height:80px;
     font-weight: bold;
     cursor: pointer;
-    
     }
 
     /* 말풍선 하단 중앙에 위치 */

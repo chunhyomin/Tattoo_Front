@@ -159,7 +159,13 @@
   transform: translateY(110px);
   z-index: 3;
 }
-
+.bubble-container-picture{
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  z-index: 3;
+}
 .bubble-img {
   width: 100%;
   height: auto;
@@ -363,11 +369,11 @@ div p {
 }
 
 .btn-icon {
-  background: #eee;
   padding: 10px 20px;
   border-radius: 999px;
   margin: 0 10px;
   font-weight: bold;
+  filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
 }
 
 .dark_cloud {

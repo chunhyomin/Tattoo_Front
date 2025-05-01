@@ -71,9 +71,16 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(true);
   const [animalType, setAnimalType] = useState("");
   const [redirectCountdown, setRedirectCountdown] = useState(null);
+  const apiCalledRef = useRef(false); // API 호출 여부를 추적하는 ref 추가
   
   // 타투 생성 API 호출
   useEffect(() => {
+    // 이미 API가 호출되었다면 실행하지 않음
+    if (apiCalledRef.current) return;
+    
+    // API 호출 플래그를 true로 설정
+    apiCalledRef.current = true;
+    
     // 진행 상태 및 로딩 메시지 업데이트 함수
     const updateProgress = (value, messageIndex) => {
       setProgress(value);

@@ -333,7 +333,7 @@ function App() {
   };
 
   return (
-    <Container style={{ minHeight: "120vh" }}>
+    <Container className="mt-4">
       {/* 플래시 효과 오버레이 */}
       <FlashOverlay active={flashActive} />
       
@@ -458,7 +458,7 @@ function App() {
         </Col>
         <Col xs={12} sm={6} md={5}>
           <div
-            className="bubble-container position-relative d-flex justify-content-center align-items-center"
+            className="bubble-container-picture position-relative d-flex justify-content-center align-items-center"
             ref={bubbleRef}
           >
             <img src={bubble} alt="말풍선" className="bubble-img w-100" />
