@@ -102,7 +102,7 @@
   margin: 0 10px;
 }
 
-.style-text {
+/* .style-text {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -113,8 +113,8 @@
   text-align: center;
   margin: 0;
   z-index: 2;
-  pointer-events: none; /* 텍스트에 마우스 이벤트 비활성화 */
-}
+  pointer-events: none; 
+} */
 
 @media screen and (max-width: 768px) {
   .style-text {

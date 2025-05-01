@@ -23,6 +23,7 @@ const CAMERA_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2122/2122-
 
 //text 색, 두께 수정
 const TextBox = styled.p`
+  font-size: ${({ fontSize }) => fontSize - 30}px;
   font-weight: 700;
   color: #8B8B8B;
   white-space: pre-line;
@@ -30,7 +31,6 @@ const TextBox = styled.p`
   word-break: keep-all;
   text-align: center;
   line-height: 1.4;
-  font-size: ${({ fontSize }) => fontSize - 30}px;
 `;
 
 // 카메라 플래시 효과를 위한 스타일 컴포넌트
@@ -454,16 +454,16 @@ function App() {
 
       <canvas ref={canvasRef} style={{ display: "none" }} />
 
-      <Row className="character-row justify-content-center align-items-center">
-        <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+      <Row className="character-row justify-content-center align-items-center g-5"
+      style={{ marginTop: "-120px" }}//말풍선이랑 캐릭터 높이 조절
+      >
+        <Col xs={4} sm={3} md={2} className="d-flex justify-content-end">
           <img src={ch1} alt="캐릭터1" className="char-img" />
         </Col>
-        <Col xs={12} sm={6} md={5}>
+        <Col xs={12} sm={6} md={5} className="position-relative">
           <div
-            className="bubble-container-picture position-relative d-flex justify-content-center align-items-center"
-            ref={bubbleRef}
-          >
-            <img src={bubble} alt="말풍선" className="bubble-img w-100" />
+            className="bubble-container" ref={bubbleRef}>
+            <img src={bubble} alt="말풍선" className="bubble-img" />
             <div
               className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
               style={{ padding: "2rem" }}
@@ -472,7 +472,7 @@ function App() {
             </div>
           </div>
         </Col>
-        <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+        <Col xs={4} sm={3} md={2} className="d-flex justify-content-start">
           <img src={ch2} alt="캐릭터2" className="char-img" />
         </Col>
       </Row>

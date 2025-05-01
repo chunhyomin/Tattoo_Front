@@ -169,16 +169,15 @@ function App() {
                 className={`option-button ${selectedStyle === index ? "selected-style" : ""}`}
                 style={{ cursor: "pointer" }}
               />
-              <p className="style-text">{STYLE_TYPES[index].name}</p>
+              {/* <p className="style-text">{STYLE_TYPES[index].name}</p> */}
             </div>
           ))}
         </div>
 
-        <Row className="character-row justify-content-center align-items-center mt-4">
-          <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+        <Row className="character-row justify-content-center align-items-center g-5">
+          <Col xs={4} sm={3} md={2} className="d-flex justify-content-end">
             <img src={ch1} alt="캐릭터1" className="char-img" />
           </Col>
-
           <Col xs={12} sm={6} md={5} className="position-relative">
             <div className="bubble-container" ref={bubbleRef}>
               <img src={bubble} alt="말풍선" className="bubble-img" />
@@ -200,7 +199,7 @@ function App() {
             </div>
           </Col>
 
-          <Col xs={4} sm={3} md={2} className="d-flex justify-content-center">
+          <Col xs={4} sm={3} md={2} className="d-flex justify-content-start">
             <img src={ch2} alt="캐릭터2" className="char-img" />
           </Col>
         </Row>

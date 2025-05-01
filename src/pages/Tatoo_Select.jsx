@@ -328,9 +328,156 @@
         }
     };
 
-    // 직접 인쇄 실행
+    // PDF 변환 후 인쇄하는 함수
     const handlePrint = () => {
-        window.print();
+        // 기존 프린트 프레임 제거
+        const existingFrame = document.getElementById('printFrame');
+        if (existingFrame) {
+            document.body.removeChild(existingFrame);
+        }
+
+        setIsPdfGenerating(true);
+        
+        // A5 요소 확인
+        const a5Element = a5BoxRef.current;
+        if (!a5Element) {
+            console.error("인쇄할 요소를 찾을 수 없습니다.");
+            setIsPdfGenerating(false);
+            return;
+        }
+        
+        // A5 규격: 148mm x 210mm (너비 x 높이)
+        const a5Width = 148;
+        const a5Height = 210;
+        
+        // 인쇄 전 스타일 백업
+        const originalStyle = {
+            background: a5Element.style.background
+        };
+        
+        // QR 코드 스타일 백업 및 최적화
+        const qrCode = a5Element.querySelector('.qr-code');
+        let qrCodeOriginalStyle = null;
+        
+        if (qrCode) {
+            // 원래 스타일 저장
+            qrCodeOriginalStyle = {
+                width: qrCode.style.width,
+                height: qrCode.style.height,
+                border: qrCode.style.border,
+                marginRight: qrCode.style.marginRight,
+                marginBottom: qrCode.style.marginBottom
+            };
+            
+            // QR 코드 크기와 위치 최적화
+            qrCode.style.width = '18mm';     // 크기를 줄임
+            qrCode.style.height = '18mm';    // 크기를 줄임
+            qrCode.style.border = '1px solid #000';
+            qrCode.style.marginRight = '5mm'; // 우측 여백 증가
+            qrCode.style.marginBottom = '3mm'; // 하단 여백 추가
+        }
+        
+        // 인쇄를 위한 스타일 적용
+        a5Element.style.background = 'white';
+        
+        // html2canvas 옵션
+        const canvasOptions = {
+            scale: 2, // 고해상도 설정
+            useCORS: true, // 외부 이미지 허용
+            allowTaint: true,
+            backgroundColor: 'white',
+            logging: false
+        };
+        
+        // 요소를 캔버스로 캡처
+        html2canvas(a5Element, canvasOptions).then(canvas => {
+            // 캔버스 데이터를 이미지로 변환
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            
+            // 원래 스타일 복원
+            a5Element.style.background = originalStyle.background;
+            if (qrCode && qrCodeOriginalStyle) {
+                qrCode.style.width = qrCodeOriginalStyle.width;
+                qrCode.style.height = qrCodeOriginalStyle.height;
+                qrCode.style.border = qrCodeOriginalStyle.border;
+                qrCode.style.marginRight = qrCodeOriginalStyle.marginRight;
+                qrCode.style.marginBottom = qrCodeOriginalStyle.marginBottom;
+            }
+            
+            // PDF 생성 (A5 크기)
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: [a5Width, a5Height],
+                compress: true
+            });
+            
+            // PDF에 이미지 추가 (여백 없이)
+            pdf.addImage(imgData, 'JPEG', 0, 0, a5Width, a5Height);
+            
+            // iframe을 이용한 PDF 표시 및 인쇄
+            const printFrame = document.createElement('iframe');
+            printFrame.id = 'printFrame';
+            printFrame.style.position = 'fixed';
+            printFrame.style.right = '0';
+            printFrame.style.bottom = '0';
+            printFrame.style.width = '0'; // 보이지 않게 설정
+            printFrame.style.height = '0'; // 보이지 않게 설정
+            printFrame.style.border = 'none';
+            printFrame.style.opacity = '0'; // 투명하게 설정
+            document.body.appendChild(printFrame);
+            
+            // PDF 데이터
+            const pdfData = pdf.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfData);
+            
+            // iframe 로드 완료 후 처리
+            printFrame.onload = function() {
+                try {
+                    // 인쇄 대화상자 표시
+                    printFrame.contentWindow.print();
+                    
+                    // 인쇄 대화상자가 닫히면 iframe 정리 (약 10초 후)
+                    setTimeout(() => {
+                        // iframe이 아직 문서에 있는지 확인
+                        if (document.body.contains(printFrame)) {
+                            document.body.removeChild(printFrame);
+                            URL.revokeObjectURL(pdfUrl);
+                            console.log('인쇄 iframe 정리 완료');
+                        }
+                    }, 10000);
+                    
+                    // 로딩 상태 해제
+                    setIsPdfGenerating(false);
+                } catch (e) {
+                    console.error('인쇄 오류:', e);
+                    setIsPdfGenerating(false);
+                    
+                    // 오류 발생 시 즉시 정리
+                    if (document.body.contains(printFrame)) {
+                        document.body.removeChild(printFrame);
+                        URL.revokeObjectURL(pdfUrl);
+                    }
+                }
+            };
+            
+            // iframe 소스 설정
+            printFrame.src = pdfUrl;
+        }).catch(err => {
+            console.error("PDF 생성 오류:", err);
+            
+            // 오류 발생 시 원래 스타일로 복원
+            a5Element.style.background = originalStyle.background;
+            if (qrCode && qrCodeOriginalStyle) {
+                qrCode.style.width = qrCodeOriginalStyle.width;
+                qrCode.style.height = qrCodeOriginalStyle.height;
+                qrCode.style.border = qrCodeOriginalStyle.border;
+                qrCode.style.marginRight = qrCodeOriginalStyle.marginRight;
+                qrCode.style.marginBottom = qrCodeOriginalStyle.marginBottom;
+            }
+            
+            setIsPdfGenerating(false);
+        });
     };
 
     // useEffect 추가 - 레터링 이미지 경로가 설정되면 후처리 API 호출
@@ -843,9 +990,32 @@
                 {/* 버튼 영역 */}
                 <Col xs="auto" md="auto"className="d-flex justify-content-center">
                     <div>
-                        <img src={minib1} alt="인쇄하기" className="btn-icon" onClick={handlePrint} />
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <img 
+                                src={minib1} 
+                                alt="인쇄하기" 
+                                className="btn-icon" 
+                                onClick={handlePrint} 
+                                style={{ opacity: isPdfGenerating ? 0.5 : 1, cursor: isPdfGenerating ? 'default' : 'pointer' }}
+                            />
+                            {isPdfGenerating && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    backgroundColor: 'rgba(255,255,255,0.8)',
+                                    borderRadius: '5px',
+                                    padding: '3px 8px',
+                                    fontSize: '12px',
+                                    fontWeight: 'bold'
+                                }}>
+                                    변환중...
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    {/* 공유하기 버튼 제거 */}
+                    {/* 돌아가기 버튼 */}
                     <div >
                     <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
                     </div>

@@ -24,7 +24,7 @@
     justify-content: center;
     overflow: hidden;
     position: relative;
-    margin: auto;
+    margin-top: 25px;
     filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
     }
 
@@ -121,7 +121,7 @@
 
     /* 프린트용 A5 도안 */
     .a5-box {
-    aspect-ratio: 1 / 1.41;
+    aspect-ratio: 1 / 1.41; /* A5 비율 (148mm x 210mm) */
     width: 100%;
     max-width: 300px;
     background: white;
@@ -134,6 +134,7 @@
     position: relative;
     filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
     overflow: hidden;
+    box-sizing: border-box;
     }
 
     .tattoo-grid {
@@ -242,8 +243,8 @@
     /* 인쇄 스타일 */
     @media print {
         @page {
-            size: 210mm 297mm; /* A4 크기 명시적 지정 */
-            margin: 5mm 0; /* 상단 여백을 줄임 (15mm에서 5mm로) */
+            size: 148mm 210mm; /* 정확한 A5 크기 */
+            margin: 0; /* 모든 여백 제거 */
         }
         
         /* 인쇄 시 필요없는 요소들 숨기기 */
@@ -251,115 +252,87 @@
             visibility: hidden;
         }
         
+        /* a5-box와 그 내부 요소만 보이게 함 */
         .a5-box, .a5-box * {
             visibility: visible;
         }
         
+        /* a5-box 위치 고정 및 크기 설정 */
         .a5-box {
-            position: absolute;
-            left: 50%;
-            top: 0; /* 상단 위치를 0으로 설정 */
-            transform: translateX(-50%); /* 중앙 정렬 */
-            width: 148mm;
-            height: 210mm;
-            padding: 5mm; /* 패딩을 더 줄여서 내부 공간 확보 (8mm에서 5mm로) */
-            margin: 0;
-            box-shadow: none;
-            filter: none;
-            background: white;
-            border: none;
-            page-break-after: avoid;
-            page-break-inside: avoid;
-            page-break-before: avoid;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 148mm !important; /* A5 너비 */
+            height: 210mm !important; /* A5 높이 */
+            padding: 5mm !important; /* 여백 축소 */
+            margin: 0 !important;
+            box-shadow: none !important;
+            filter: none !important;
+            background: white !important;
+            border: none !important;
+            overflow: visible !important; /* 잘림 방지 */
+            transform: none !important;
         }
         
-        /* 타투 그리드 레이아웃 수정 - 겹침 방지 */
+        /* 타투 그리드 크기 조정 - 더 크게 */
         .tattoo-grid {
-            display: grid;
-            grid-gap: 8mm; /* 간격 증가 (4mm에서 8mm로) */
-            height: 88%; /* 높이 약간 감소 (90%에서 88%로) */
-            width: 100%;
-            margin-bottom: 3mm;
-            background: white;
+            display: grid !important;
+            height: 170mm !important; /* 높이 증가 */
+            width: 138mm !important; /* 너비 증가 */
+            margin: 0 !important;
+            padding: 0 !important;
+            gap: 5mm !important;
+            background: white !important;
         }
         
-        /* 1,2,3,4개 이미지에 따른 적절한 그리드 레이아웃 */
-        .tattoo-grid.count-1 {
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr;
-        }
-        
-        .tattoo-grid.count-2 {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr;
-        }
-        
-        .tattoo-grid.count-3, .tattoo-grid.count-4 {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-        }
-        
-        /* 선택된 타투 이미지 크기 조정 - 겹침 방지 */
-        .selected-tattoo {
-            width: 90%; /* 너비 감소 (100%에서 90%로) */
-            height: 90%; /* 높이 감소 (100%에서 90%로) */
-            object-fit: contain;
-            max-width: 100%; /* 최대 너비 제한 추가 */
-            max-height: 100%; /* 최대 높이 제한 추가 */
-            padding: 0;
-            margin: 0 auto;
-        }
-        
-        /* 타투 그리드 내부 div 크기 조정 */
-        .tattoo-grid > * {
-            width: 95%; /* 너비 감소 (100%에서 95%로) */
-            height: 95%; /* 높이 감소 (100%에서 95%로) */
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* 레터링과 QR 코드 영역 인쇄 크기 조정 */
-        .a5-box > div:last-child {
-            width: 100%;
-            margin-top: 2mm;
-            position: relative;
-            height: 6%;
-            background: white;
+        /* 레터링과 QR 코드 영역 설정 */
+        .image-card-bottom, .a5-box > div:last-child {
+            position: relative !important;
+            width: 138mm !important;
+            height: 25mm !important; /* 높이 증가 */
+            margin-top: 2mm !important;
+            background: white !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: flex-end !important; /* 하단 정렬 */
         }
         
         /* 레터링 이미지 크기 조정 */
-        .a5-box > div:last-child img:first-child {
-            max-width: 65%;
-            height: auto;
-            position: absolute;
-            left: 0;
-            bottom: 0;
+        .image-card-bottom img:first-of-type,
+        .a5-box > div:last-child img:first-of-type {
+            max-width: 80mm !important;
+            height: auto !important;
+            max-height: 20mm !important;
+            object-fit: contain !important;
+            background: white !important;
         }
         
-        /* 동물명 스타일 */
-        .animal-name {
-            /* max-width: 65% !important;
-            max-height: 40px !important;
-            position: absolute !important;
-            left: 0 !important;
-            bottom: 0 !important;
-            font-size: 20px !important;
-            font-weight: bold !important;
-            font-style: italic !important;
-            margin: 0 !important; */
-        }
-        
-        /* QR 코드 크기 및 위치 고정 */
-        .a5-box > div:last-child img:last-child,
-        .qr-code {
-            width: 25mm !important;
-            height: 25mm !important;
+        /* QR 코드 크기 및 위치 설정 - 잘림 방지 */
+        .image-card-bottom img.qr-code,
+        .a5-box > div:last-child img.qr-code {
+            width: 25mm !important; /* 크기 증가 */
+            height: 25mm !important; /* 크기 증가 */
             border: 1px solid #000 !important;
-            position: absolute !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            margin: 0 !important;
+            background: white !important;
+            object-fit: contain !important;
+            margin-right: 2mm !important; /* 우측 여백 추가 */
+            margin-bottom: 2mm !important; /* 하단 여백 추가 */
+        }
+        
+        /* 선택된 타투 이미지 크기 조정 - 더 크게 */
+        .selected-tattoo {
+            max-width: 100% !important; /* 최대 너비 증가 */
+            max-height: 100% !important; /* 최대 높이 증가 */
+            object-fit: contain !important;
+            background: white !important;
+        }
+        
+        /* 그리드 내 이미지 컨테이너 크기 조정 */
+        .tattoo-grid > * {
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
     }
