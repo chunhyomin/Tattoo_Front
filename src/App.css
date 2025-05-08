@@ -421,6 +421,46 @@ div p {
   transform: translateY(20px);
   z-index: 3;
 }
+
+.char-img-picture {
+  position: relative;
+  width: 150%;
+  z-index: 3;
+  filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.3));
+  cursor: default;
+}
+
+.photo-btn {
+  padding: 10px 20px;
+  width: 28%;
+  max-width: 200px;
+  min-width: 100px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.click_img {
+  position: absolute;
+  padding: 10px 20px;
+  width: 35%;
+  max-width: 200px;
+  min-width: 100px;
+  background: none;
+  border: none;
+  z-index: 4;
+}
+
+@keyframes shake-horizontal {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.shake-animation {
+  animation: shake-horizontal 0.6s infinite;
+}
 /* 모바일 화면에서의 버튼 스타일 */
 @media (max-width: 768px) {
   .responsive-btn {

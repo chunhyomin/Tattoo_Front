@@ -13,6 +13,10 @@ import ch2 from "/너굴맨.png";
 import cloud from "/cloud.png";
 import bubble from "/말풍선.png";
 import btimg from "/buttonimg.png";
+import t_btn from "/t_a_p_btn.png";
+import create_btn from "/create_tattoo.png";
+import click from "/click.png";
+import back from "/back_btn.png";
 
 import "./Picture.css";
 import "../App.css";
@@ -381,58 +385,54 @@ function App() {
       </Row>
       <Row className="three" style={{ marginTop: "30px", textAlign: "center" }}>
         <Col style={{ zIndex:2 }}>
+        <div className=" d-flex justify-content-center align-items-center"
+              >
           {/* 촬영 버튼 */}
-          <button 
-            onClick={handleCapture} 
-            disabled={isTimerActive || capturedImages.length >= 2 || showPreview}
-            style={{ 
-              padding: "10px 20px", 
-              fontSize: "16px", 
-              marginRight: "10px",
-              opacity: (isTimerActive || capturedImages.length >= 2 || showPreview) ? 0.6 : 1 
-            }}
+          <img src={t_btn} alt="시작버튼" className="photo-btn" 
+          disabled={isTimerActive || capturedImages.length >= 2 || showPreview}
+          onClick={handleCapture} 
+          style={{ 
+            opacity: (isTimerActive || capturedImages.length >= 2 || showPreview) ? 0.6 : 1 
+          }}
           >
-            {isTimerActive ? `${timerCount}초 후 촬영` : 
-             showPreview ? '사진 처리 중...' :
-             (capturedImages.length >= 2 ? '촬영 완료' : `촬영하기 (${capturedImages.length}/2)`)}
-          </button>
+          {/* {isTimerActive ? `${timerCount}초 후 촬영` : 
+           showPreview ? '사진 처리 중...' :
+           (capturedImages.length >= 2 ? '촬영 완료' : `촬영하기 (${capturedImages.length}/2)`)} */}
+          </img>
+
+
+
+          
 
           {/* 타투 생성 버튼 */}
-          <button 
+          <img
+            src={create_btn}
+            alt="타투생성버튼"
+            className="photo-btn"
             onClick={sendImageToBackend}
-            disabled={loading || capturedImages.length < 2 || isTimerActive || showPreview}
-            style={{ 
-              padding: "10px 20px", 
-              fontSize: "16px", 
-              backgroundColor: loading || capturedImages.length < 2 || isTimerActive || showPreview ? "#ccc" : "#007bff", 
+            style={{
+              display: capturedImages.length >= 2 ? 'inline-block' : 'none', // 조건에 따라 보이기/숨기기
+              padding: "10px 20px",
+              fontSize: "16px",
+              // backgroundColor: loading || isTimerActive || showPreview ? "#ccc" : "#007bff"
               color: "white",
-              marginRight: "10px"
+              cursor: loading || isTimerActive || showPreview ? "not-allowed" : "pointer",
+              pointerEvents: loading || isTimerActive || showPreview ? "none" : "auto" // 비활성화
             }}
-          >
-            {loading ? "처리 중..." : "타투 생성하기"}
-          </button>
-          
-          {/* 이미지 저장 버튼 */}
-          {capturedImage && (
-            <button 
-              onClick={handleDownload} 
-              style={{ 
-                padding: "10px 20px", 
-                fontSize: "16px"
-              }}
-            >
-              이미지 저장
-            </button>
-          )}
-          
+          />
+                    <img
+            src={click}
+            alt="시작 버튼"
+            className={`click_img ${capturedImages.length >= 2 ? 'shake-animation' : ''}`}
+            style={{
+              display: capturedImages.length >= 2 ? 'inline-block' : 'none',
+            }}
+          />
+          </div>
+
           {/* 촬영된 사진 개수 표시 */}
           <div style={{ marginTop: "10px", fontSize: "14px", fontWeight: "bold" }}>
             촬영된 사진: {capturedImages.length}장 / 최대 2장
-          </div>
-          
-          {/* 선택된 성별 정보 표시 */}
-          <div style={{ marginTop: "10px", fontSize: "14px" }}>
-            선택된 성별: {selectedGender === 'male' ? '남자' : '여자'}
           </div>
           
           {/* 에러 메시지 표시 */}
@@ -441,28 +441,21 @@ function App() {
               {error}
             </div>
           )}
-          
-          {/* 이전으로 버튼 */}
-          <button 
-            onClick={goBack}
-            style={{ padding: "10px 20px", fontSize: "16px", marginTop: "20px", backgroundColor: "#6c757d", color: "white" }}
-          >
-            이전으로
-          </button>
+
         </Col>
       </Row>
 
       <canvas ref={canvasRef} style={{ display: "none" }} />
 
-      <Row className="character-row justify-content-center align-items-center g-5"
-      style={{ marginTop: "-120px" }}//말풍선이랑 캐릭터 높이 조절
+      <Row className="character-row justify-content-center align-items-center "
+      // style={{ marginTop: "-120px" }}//말풍선이랑 캐릭터 높이 조절
       >
         <Col xs={4} sm={3} md={2} className="d-flex justify-content-end">
-          <img src={ch1} alt="캐릭터1" className="char-img" />
+          <img src={ch1} alt="캐릭터1" className="char-img-picture" />
         </Col>
         <Col xs={12} sm={6} md={5} className="position-relative">
           <div
-            className="bubble-container" ref={bubbleRef}>
+            className="" ref={bubbleRef}>
             <img src={bubble} alt="말풍선" className="bubble-img" />
             <div
               className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
@@ -470,10 +463,15 @@ function App() {
             >
               <TextBox fontSize={fontSize}>{displayText}</TextBox>
             </div>
+            <img
+              src={back}
+              alt="시작 버튼"
+              className="start-btn"
+              onClick={goBack}            />
           </div>
         </Col>
         <Col xs={4} sm={3} md={2} className="d-flex justify-content-start">
-          <img src={ch2} alt="캐릭터2" className="char-img" />
+          <img src={ch2} alt="캐릭터2" className="char-img-picture" />
         </Col>
       </Row>
     </Container>

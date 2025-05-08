@@ -20,6 +20,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../App.css";
 
 const TextBox = styled.p`
+  position:relative;
   font-size: ${({ fontSize }) => fontSize}px;
   font-weight: 700;
   color: #8B8B8B;
@@ -330,6 +331,7 @@ function App() {
                       {loadingError}
                       {redirectCountdown !== null && (
                         <div style={{ 
+                          position: "realative",
                           marginTop: '15px', 
                           fontSize: '1.1em',
                           padding: '5px',
@@ -395,8 +397,8 @@ function App() {
         </Row>
         
         
-        <Row className="justify-content-end align-items-center mt-5">
-          <Col xs={6} sm={12} md={10}>
+        <Row className="justify-content-center align-items-center mt-5">
+          <Col className="align-items-center" xs={6} sm={12} md={10}>
             <ProgressBar 
               now={progress} 
               label={`${progress}%`} 
@@ -413,7 +415,7 @@ function App() {
           </Col>
         </Row>
         <Row className="justify-content-center mt-5">
-        <Col xs={12}>
+        <Col xs="auto">
           <div style={{
           position: "fixed",
           bottom: 0,

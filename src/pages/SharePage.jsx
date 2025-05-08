@@ -106,6 +106,14 @@ const BackButton = styled.button`
   }
 `;
 
+const OriginalImageSection = styled.div`
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  border-left: 3px solid #2196F3;
+`;
+
 function SharePage() {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -194,7 +202,7 @@ function SharePage() {
     return <div>데이터를 불러올 수 없습니다.</div>;
   }
   
-  const { display_image, tattoo_images, lettering_image, style_name } = shareData;
+  const { display_image, tattoo_images, lettering_image, style_name, original_image } = shareData;
   const { hours, minutes, seconds } = timeRemaining;
   
   return (
@@ -208,11 +216,18 @@ function SharePage() {
         </CountdownBox>
         
         <div>
-          <SectionTitle>최종 결과</SectionTitle>
-          {display_image ? (
-            <MainImage src={getImageUrl(display_image)} alt="최종 결과" />
+          {original_image ? (
+            <OriginalImageSection>
+              <SectionTitle>원본 사진</SectionTitle>
+              <MainImage src={getImageUrl(original_image)} alt="원본 사진" />
+            </OriginalImageSection>
           ) : (
-            <p>디스플레이 이미지가 없습니다.</p>
+            display_image && (
+              <OriginalImageSection>
+                <SectionTitle>생성된 이미지</SectionTitle>
+                <MainImage src={getImageUrl(display_image)} alt="생성된 이미지" />
+              </OriginalImageSection>
+            )
           )}
           
           <StyleInfo>
