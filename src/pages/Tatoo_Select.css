@@ -184,15 +184,15 @@
     }
 
     .btn-icon {
-    max-height:80px;
-    font-weight: bold;
-    cursor: pointer;
+        max-height: 70px;
+        width: auto;
+        cursor: pointer;
+        transition: transform 0.2s ease;
     }
-
+    
     /* 말풍선 하단 중앙에 위치 */
     .bubble5-container {
     /* position: absolute; */
-    left: 15%; 
     z-index: 1;
     }
 

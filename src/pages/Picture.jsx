@@ -27,7 +27,7 @@ const CAMERA_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2122/2122-
 
 //text 색, 두께 수정
 const TextBox = styled.p`
-  font-size: ${({ fontSize }) => fontSize - 30}px;
+  font-size: ${({ fontSize }) => fontSize - 33}px;
   font-weight: 700;
   color: #8B8B8B;
   white-space: pre-line;
@@ -357,7 +357,7 @@ function App() {
       
       <Row className="one">
         <div className="App">
-          <img className="cloudimg" src={cloud} />
+          <img className="cloud-bg" src={cloud} />
         <Col>
         <video
           className="video_type"
@@ -456,7 +456,7 @@ function App() {
         <Col xs={12} sm={6} md={5} className="position-relative">
           <div
             className="" ref={bubbleRef}>
-            <img src={bubble} alt="말풍선" className="bubble-img" />
+            <img src={bubble} alt="말풍선" className="bubble-img w-100" />
             <div
               className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
               style={{ padding: "2rem" }}

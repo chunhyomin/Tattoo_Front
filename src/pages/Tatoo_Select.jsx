@@ -976,70 +976,75 @@
 
             {/* 하단: 말풍선 + 버튼 */}
             <Row className="justify-content-center align-items-center mt-4">
-  <Col xs={4} sm={12} md={8} className="d-flex justify-content-center align-items-center">
-    <div className="bubble5-container position-relative" ref={bubbleRef}>
-      <img src={bubble} alt="말풍선" className="bubble4-img" style={{ width: '100%', height: 'auto' }} />
-                        {/* 텍스트를 말풍선 안에 딱 맞게 배치 */}
-                        <div
-                        className="position-absolute"
-                        style={{
-                            top: '12%', // 말풍선 디자인에 맞게 조절
-                            left: '10%',
-                            right: '10%',
-                            bottom: '15%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '0.5rem',
-                            overflow: 'hidden',
-                            textAlign: 'center',
-                        }}
-                        >
-                        <TextBox fontSize={fontSize}>{displayText}</TextBox>
+            {/* 말풍선 영역 */}
+            <Col xs={12} md={8} className="d-flex justify-content-center align-items-center mx-auto">
+                <div className="bubble5-container position-relative" ref={bubbleRef}>
+                <img
+                    src={bubble}
+                    alt="말풍선"
+                    className="bubble4-img"
+                    style={{ width: '100%', height: 'auto' }}
+                />
+                <div
+                    className="position-absolute"
+                    style={{
+                    top: '12%',
+                    left: '10%',
+                    right: '10%',
+                    bottom: '15%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0.5rem',
+                    overflow: 'hidden',
+                    textAlign: 'center',
+                    }}
+                >
+                    <TextBox fontSize={fontSize}>{displayText}</TextBox>
+                </div>
+                </div>
+            </Col>
+
+            {/* 버튼 영역 */}
+            <Col xs="auto" md="auto"className="d-flex justify-content-center">
+                <div>
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <img 
+                            src={minib1} 
+                            alt="인쇄하기" 
+                            className="btn-icon" 
+                            onClick={handlePrint} 
+                            style={{ opacity: isPdfGenerating ? 0.5 : 1, cursor: isPdfGenerating ? 'default' : 'pointer' }}
+                        />
+                        {isPdfGenerating && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                borderRadius: '5px',
+                                padding: '3px 8px',
+                                fontSize: '12px',
+                                fontWeight: 'bold'
+                            }}>
+                                변환중...
                             </div>
+                        )}
                     </div>
-                </Col>
+                </div>
+                {/* 돌아가기 버튼 */}
+                <div >
+                    <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
+                </div>
+                <div>
+                    <img src={minib3} alt="home" className="btn-icon" onClick={() => navigate("/App")}/>
+                </div>
+            </Col>
+        </Row>
+    </Container>
+    </div>
+);
+}
 
-                {/* 버튼 영역 */}
-                <Col xs="auto" md="auto"className="d-flex justify-content-center">
-                    <div>
-                        <div style={{ position: 'relative', display: 'inline-block' }}>
-                            <img 
-                                src={minib1} 
-                                alt="인쇄하기" 
-                                className="btn-icon" 
-                                onClick={handlePrint} 
-                                style={{ opacity: isPdfGenerating ? 0.5 : 1, cursor: isPdfGenerating ? 'default' : 'pointer' }}
-                            />
-                            {isPdfGenerating && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                    backgroundColor: 'rgba(255,255,255,0.8)',
-                                    borderRadius: '5px',
-                                    padding: '3px 8px',
-                                    fontSize: '12px',
-                                    fontWeight: 'bold'
-                                }}>
-                                    변환중...
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    {/* 돌아가기 버튼 */}
-                    <div >
-                        <img src={minib2} alt="돌아가기" className="btn-icon" onClick={() => navigate("/Picture_Select")} />
-                    </div>
-                    <div>
-                        <img src={minib3} alt="home" className="btn-icon" onClick={() => navigate("/App")}/>
-                    </div>
-                </Col>
-            </Row>
-        </Container>
-        </div>
-    );
-    }
-
-    export default Page4;
+export default Page4;

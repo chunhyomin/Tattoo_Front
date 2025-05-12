@@ -208,7 +208,7 @@ function SharePage() {
   return (
     <div className="app1-background">
       <Container>
-        <h1>타투 디자인 공유</h1>
+        <h1>AI 동물 타투</h1>
         
         <CountdownBox>
           <h3>이미지 접근 가능 시간</h3>
@@ -224,7 +224,7 @@ function SharePage() {
           ) : (
             display_image && (
               <OriginalImageSection>
-                <SectionTitle>생성된 이미지</SectionTitle>
+                <SectionTitle>생성된 123이미지</SectionTitle>
                 <MainImage src={getImageUrl(display_image)} alt="생성된 이미지" />
               </OriginalImageSection>
             )
@@ -260,7 +260,7 @@ function SharePage() {
         </div>
         
         <Notice>
-          <p><strong>알림:</strong> 이 이미지들은 1시간 후에 자동으로 삭제됩니다. 저장하려면 지금 다운로드하세요.</p>
+          <p><strong>알림:</strong> 이 123이미지들은 1시간 후에 자동으로 삭제됩니다. 저장하려면 지금 다운로드하세요.</p>
           <p>이미지를 다운로드하려면 이미지를 길게 터치(모바일) 또는 우클릭(PC)하여 '이미지 저장'을 선택하세요.</p>
         </Notice>
         
